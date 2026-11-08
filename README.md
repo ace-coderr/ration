@@ -2,6 +2,8 @@
 
 **One spending limit that follows your spending across chains. No keeper. No custody.**
 
+**Live app: https://ration.plumbline-app.workers.dev** (open `/live` and `/proof` directly)
+
 Every chain enforces its own limit, so a budget spread over several chains can quietly go over. Ration
 holds one budget per period, gives each chain a *slice* of it, and a reactive contract on
 [Reactive Network](https://dev.reactive.network) moves slices to the chain where spending happens.
@@ -9,7 +11,6 @@ Tokens stay in vaults you control. Only the right to spend moves.
 
 Testnet build: Base Sepolia, Unichain Sepolia, Reactive Lasna. The token is a mock with no value.
 
-- **Live app: https://ration.plumbline-app.workers.dev** (try `/live` and `/proof`)
 - Proof, with every transaction hash and latency: [docs/EVIDENCE.md](docs/EVIDENCE.md)
 - Proof that a forced early start never overlaps old and new slices: [docs/EVIDENCE_FORCED_START.md](docs/EVIDENCE_FORCED_START.md)
 - Audit notes: [docs/AUDIT.md](docs/AUDIT.md)
