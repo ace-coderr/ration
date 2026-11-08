@@ -13,6 +13,7 @@ contract Handler is Base {
     uint256 public spends;
     uint256 public deliveries;
     uint256 public rolls;
+    uint256 public forced;
 
     function init() external {
         setUp();
@@ -57,6 +58,14 @@ contract Handler is Base {
         _cron();
     }
 
+    /// @dev The owner starts a new period early, at a random moment, possibly while one is already closing.
+    function forceStart() external {
+        if (!hub.closing()) {
+            hub.startEpoch();
+            forced++;
+        }
+    }
+
     function roll() external {
         if (block.timestamp >= hub.epochEnd()) {
             hub.rollEpoch();
@@ -72,13 +81,14 @@ contract InvariantTest is StdInvariant, Test {
         h = new Handler();
         h.init();
         targetContract(address(h));
-        bytes4[] memory sel = new bytes4[](6);
+        bytes4[] memory sel = new bytes4[](7);
         sel[0] = Handler.spend.selector;
         sel[1] = Handler.deliver.selector;
         sel[2] = Handler.deliverNext.selector;
         sel[3] = Handler.warp.selector;
         sel[4] = Handler.cron.selector;
         sel[5] = Handler.roll.selector;
+        sel[6] = Handler.forceStart.selector;
         targetSelector(FuzzSelector({addr: address(h), selectors: sel}));
     }
 
@@ -105,13 +115,13 @@ contract InvariantTest is StdInvariant, Test {
         }
     }
 
-    /// @dev A lease can only be live in one epoch at a time: a vault holding an old slice
-    ///      is already expired by the time a newer epoch can exist.
+    /// @dev A slice is spendable only inside [start, end). Two vaults can never be inside that window
+    ///      for different periods at the same time, however the owner and the network behave.
     function invariant_neverTwoLiveEpochsAtOnce() public view {
-        bool liveA = block.timestamp < h.vaultA().epochEnd();
-        bool liveB = block.timestamp < h.vaultB().epochEnd();
+        bool liveA = block.timestamp >= h.vaultA().epochStart() && block.timestamp < h.vaultA().epochEnd();
+        bool liveB = block.timestamp >= h.vaultB().epochStart() && block.timestamp < h.vaultB().epochEnd();
         if (liveA && liveB) {
-            assertEq(h.vaultA().epochId(), h.vaultB().epochId(), "two epochs spendable at once");
+            assertEq(h.vaultA().epochId(), h.vaultB().epochId(), "two periods spendable at once");
         }
     }
 

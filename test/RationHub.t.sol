@@ -41,7 +41,7 @@ contract RationHubTest is Base {
         );
         assertEq(
             uint256(IRationVault.EpochReset.selector),
-            uint256(keccak256("EpochReset(uint256,uint256,uint256,uint256,uint256,uint256)"))
+            uint256(keccak256("EpochReset(uint256,uint256,uint256,uint256,uint256,uint256,uint256)"))
         );
     }
 
@@ -54,6 +54,11 @@ contract RationHubTest is Base {
         assertTrue(sys.isSubscribed(address(hub), CHAIN_A, address(vaultA), uint256(r), IGNORE));
         assertTrue(sys.isSubscribed(address(hub), CHAIN_A, address(vaultA), uint256(g), IGNORE));
         assertTrue(sys.isSubscribed(address(hub), CHAIN_A, address(vaultA), uint256(e), IGNORE));
+        assertTrue(
+            sys.isSubscribed(
+                address(hub), CHAIN_A, address(vaultA), uint256(IRationVault.EpochClosed.selector), IGNORE
+            )
+        );
         assertTrue(sys.isSubscribed(address(hub), CHAIN_B, address(vaultB), uint256(s), IGNORE));
         // cron
         assertTrue(

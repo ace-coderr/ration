@@ -30,6 +30,7 @@ contract RationVault is IRationVault, AbstractCallback, Ownable, ReentrancyGuard
     error ZeroAmount();
     error ZeroAddress();
     error EpochExpired(uint256 epochEnd, uint256 nowTs);
+    error EpochNotStarted(uint256 epochStart, uint256 nowTs);
     error ExceedsSlice(uint256 requested, uint256 slice);
     error ExceedsSpenderCap(uint256 requested, uint256 remainingCap);
     error DecimalsMismatch(uint8 expected, uint8 actual);
@@ -46,6 +47,7 @@ contract RationVault is IRationVault, AbstractCallback, Ownable, ReentrancyGuard
     uint8 public immutable UNIT_DECIMALS;
 
     uint256 public epochId;
+    uint256 public epochStart;
     uint256 public epochEnd;
     uint256 public epochBudget;
     uint256 public slice;
@@ -99,6 +101,7 @@ contract RationVault is IRationVault, AbstractCallback, Ownable, ReentrancyGuard
         if (to == address(0)) revert ZeroAddress();
         if (restrictRecipients && !recipientAllowed[to]) revert RecipientNotAllowed(to);
         if (block.timestamp >= epochEnd) revert EpochExpired(epochEnd, block.timestamp);
+        if (block.timestamp < epochStart) revert EpochNotStarted(epochStart, block.timestamp);
         if (amount > slice) revert ExceedsSlice(amount, slice);
         if (s.cap != 0) {
             uint256 used = spentBy[epochId][msg.sender];
@@ -162,19 +165,36 @@ contract RationVault is IRationVault, AbstractCallback, Ownable, ReentrancyGuard
     }
 
     /// @notice Start a new epoch (period). Absolute by design: it replaces slice and clears spend.
-    /// @dev Only moves forward. Older or repeated epoch ids are ignored.
-    function resetEpoch(address rvm, uint256 slice_, uint256 epochId_, uint256 epochEnd_, uint256 budget_)
-        external
-        onlyServiceProvider
-        onlyCallbackSender(rvm)
-    {
+    /// @dev Only moves forward. Older or repeated epoch ids are ignored. The new slice cannot be
+    ///      spent before `epochStart`, and never before this vault's previous lease has ended, so an
+    ///      old and a new slice are never spendable on the same vault at once, whatever the clocks say.
+    function resetEpoch(
+        address rvm,
+        uint256 slice_,
+        uint256 epochId_,
+        uint256 epochStart_,
+        uint256 epochEnd_,
+        uint256 budget_
+    ) external onlyServiceProvider onlyCallbackSender(rvm) {
         if (epochId_ <= epochId) return;
         epochId = epochId_;
+        epochStart = epochStart_ > epochEnd ? epochStart_ : epochEnd;
         epochEnd = epochEnd_;
         epochBudget = budget_;
         slice = slice_ > budget_ ? budget_ : slice_;
         spentInEpoch = 0;
-        emit EpochReset(epochId_, slice, epochEnd_, budget_, ++seq, block.timestamp);
+        emit EpochReset(epochId_, slice, epochStart, epochEnd_, budget_, ++seq, block.timestamp);
+    }
+
+    /// @notice End the current period now. Spending on this vault stops immediately. The hub sends this
+    ///         to every vault before it starts a new period early, and only hands out new slices once all
+    ///         vaults have confirmed. Idempotent.
+    function closeEpoch(address rvm, uint256 epochId_) external onlyServiceProvider onlyCallbackSender(rvm) {
+        if (epochId_ == epochId && block.timestamp < epochEnd) {
+            epochEnd = block.timestamp;
+            slice = 0;
+        }
+        if (epochId_ == epochId) emit EpochClosed(epochId_, spentInEpoch, ++seq, block.timestamp);
     }
 
     // ================================================================ owner: funds

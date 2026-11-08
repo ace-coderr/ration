@@ -79,6 +79,7 @@ contract RationVaultTest is Base {
         vm.warp(block.timestamp + EPOCH);
         hub.rollEpoch();
         _deliverAll();
+        _afterStart();
         vm.prank(bob);
         vaultA.spend(address(usdc), shop, 50e6);
     }
@@ -133,7 +134,7 @@ contract RationVaultTest is Base {
         vaultA.grant(address(hub), 1, bytes32(uint256(1)), 1);
         vm.prank(bob);
         vm.expectRevert();
-        vaultA.resetEpoch(address(hub), 1, 2, block.timestamp + 1, 1);
+        vaultA.resetEpoch(address(hub), 1, 2, block.timestamp, block.timestamp + 1, 1);
     }
 
     function test_callbacks_rejectWrongReactiveSender() public {
@@ -151,7 +152,7 @@ contract RationVaultTest is Base {
         vm.expectRevert(
             abi.encodeWithSelector(AbstractCallback.CallbackNotAuthorized.selector, bob, address(hub))
         );
-        vaultA.resetEpoch(bob, 1, 2, block.timestamp + 1, 1);
+        vaultA.resetEpoch(bob, 1, 2, block.timestamp, block.timestamp + 1, 1);
     }
 
     function test_callbacks_proxyOfOtherChainRejected() public {
@@ -227,22 +228,22 @@ contract RationVaultTest is Base {
     function test_resetEpoch_movesForwardOnly() public {
         _spend(vaultA, 100e6);
         vm.startPrank(PROXY_A);
-        vaultA.resetEpoch(address(hub), 777e6, 1, block.timestamp + 5, 1000e6); // same epoch: ignored
+        vaultA.resetEpoch(address(hub), 777e6, 1, block.timestamp, block.timestamp + 5, 1000e6); // same epoch: ignored
         assertEq(vaultA.slice(), 400e6);
-        vaultA.resetEpoch(address(hub), 250e6, 2, block.timestamp + 5 days, 800e6);
+        vaultA.resetEpoch(address(hub), 250e6, 2, block.timestamp, block.timestamp + 5 days, 800e6);
         vm.stopPrank();
         assertEq(vaultA.epochId(), 2);
         assertEq(vaultA.slice(), 250e6);
         assertEq(vaultA.spentInEpoch(), 0);
         assertEq(vaultA.epochBudget(), 800e6);
         vm.prank(PROXY_A);
-        vaultA.resetEpoch(address(hub), 1, 1, block.timestamp + 5, 1); // older: ignored
+        vaultA.resetEpoch(address(hub), 1, 1, block.timestamp, block.timestamp + 5, 1); // older: ignored
         assertEq(vaultA.epochId(), 2);
     }
 
     function test_resetEpoch_clampsSliceToBudget() public {
         vm.prank(PROXY_A);
-        vaultA.resetEpoch(address(hub), 900e6, 2, block.timestamp + 1 days, 100e6);
+        vaultA.resetEpoch(address(hub), 900e6, 2, block.timestamp, block.timestamp + 1 days, 100e6);
         assertEq(vaultA.slice(), 100e6);
     }
 

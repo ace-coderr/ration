@@ -61,6 +61,13 @@ abstract contract Base is Test {
         vm.recordLogs();
         hub.startEpoch();
         _deliverAll(); // resets reach both vaults
+        _afterStart();
+    }
+
+    /// @dev New slices are spendable only after the hub's start delay. Tests that spend right after a
+    ///      period begins call this first.
+    function _afterStart() internal {
+        vm.warp(block.timestamp + hub.startDelay() + 1);
     }
 
     // ---------------------------------------------------------------- network simulation

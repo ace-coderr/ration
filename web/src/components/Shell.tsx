@@ -202,7 +202,7 @@ export function Footer() {
         </nav>
         {/* last element on every page */}
         <span className="byline">
-          built by <a href={X_URL} target="_blank" rel="noreferrer" aria-label="built by ace, opens x.com/_ace_won">ace</a>
+          Built by <a href={X_URL} target="_blank" rel="noreferrer" aria-label="Built by ace, opens x.com/_ace_won">ace</a>
         </span>
       </div>
     </footer>

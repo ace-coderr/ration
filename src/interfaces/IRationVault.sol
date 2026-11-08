@@ -36,14 +36,23 @@ interface IRationVault {
     event EpochReset(
         uint256 indexed epochId,
         uint256 slice,
+        uint256 epochStart,
         uint256 epochEnd,
         uint256 budget,
         uint256 seq,
         uint256 timestamp
     );
+    event EpochClosed(uint256 indexed epochId, uint256 spent, uint256 seq, uint256 timestamp);
 
     function release(address rvm, uint256 amount, bytes32 transferId, uint256 epochId) external;
     function grant(address rvm, uint256 amount, bytes32 transferId, uint256 epochId) external;
-    function resetEpoch(address rvm, uint256 slice, uint256 epochId, uint256 epochEnd, uint256 budget)
-        external;
+    function resetEpoch(
+        address rvm,
+        uint256 slice,
+        uint256 epochId,
+        uint256 epochStart,
+        uint256 epochEnd,
+        uint256 budget
+    ) external;
+    function closeEpoch(address rvm, uint256 epochId) external;
 }
