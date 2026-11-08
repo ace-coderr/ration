@@ -5,6 +5,7 @@ import {Base} from "./Base.t.sol";
 import {RationVault} from "../src/RationVault.sol";
 import {AbstractCallback} from "@reactive/src/base/AbstractCallback.sol";
 import {AbstractPayer} from "@reactive/src/base/AbstractPayer.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IPayable} from "@reactive/src/interfaces/IPayable.sol";
 import {FeeToken} from "./mocks/FeeToken.sol";
@@ -358,8 +359,8 @@ contract RationVaultTest is Base {
         vaultA.setToken(address(t), true);
         t.mint(address(vaultA), 100e6);
         vm.prank(alice);
-        // The token tries to re-enter spend() during transfer; the guard reverts the inner call.
-        vm.expectRevert();
+        // The token re-enters spend() during transfer; the guard must be what stops it.
+        vm.expectRevert(ReentrancyGuard.ReentrancyGuardReentrantCall.selector);
         vaultA.spend(address(t), address(t), 10e6);
     }
 }

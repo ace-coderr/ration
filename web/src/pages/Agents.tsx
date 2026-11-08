@@ -18,7 +18,7 @@ const CONFIG_JSON = `{
   "mcpServers": {
     "ration": {
       "command": "node",
-      "args": ["/path/to/ration/packages/mcp/dist/index.js"],
+      "args": ["/path/to/ration/packages/mcp/dist/mcp/src/index.js"],
       "env": {
         "AGENT_PRIVATE_KEY": "0x… (the agent's own testnet key)"
       }

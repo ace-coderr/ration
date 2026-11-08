@@ -46,6 +46,7 @@ export const hubAbi = parseAbi([
   "function epochId() view returns (uint256)",
   "function epochEnd() view returns (uint256)",
   "function nonce() view returns (uint256)",
+  "function startEpoch()",
   "event TransferRequested(bytes32 indexed transferId, uint256 fromChain, uint256 toChain, uint256 amount, uint256 epochId)",
   "event TransferReleased(bytes32 indexed transferId, uint256 requested, uint256 actual)",
   "event TransferGranting(bytes32 indexed transferId, uint256 amount, uint8 attempt)",

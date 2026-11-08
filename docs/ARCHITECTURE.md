@@ -156,3 +156,7 @@ These were open questions above. They are now settled by real transactions
   endpoints. Scripts retry; nothing depends on a single call succeeding.
 
 Still not measured: behaviour when a destination vault is in debt (covered in `docs/AUDIT.md`).
+
+- **Lasna minimum tip**: transactions need `maxPriorityFeePerGas` of at least 1 wei. Libraries that
+  estimate a tip of 0 (viem against Lasna) are rejected with "gas tip cap 0, minimum needed 1".
+  Wallets and Foundry set a valid tip on their own; scripts that use viem pass `1n`.

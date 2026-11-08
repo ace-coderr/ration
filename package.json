@@ -5,9 +5,12 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "prove-loop": "tsx scripts/prove-loop.ts"
+    "prove-loop": "tsx scripts/prove-loop.ts",
+    "mcp-smoke": "tsx scripts/mcp-smoke.ts",
+    "seed": "tsx scripts/seed.ts"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@types/node": "^26.6.6",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"

@@ -1,0 +1,23 @@
+{
+  "name": "@ration/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "ration-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "start": "node dist/mcp/src/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "viem": "^2.57.16",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
+  }
+}
