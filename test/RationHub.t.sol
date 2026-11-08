@@ -458,8 +458,16 @@ contract RationHubTest is Base {
         assertEq(hub.epochId(), 2);
     }
 
+    function test_constructor_cronIntervalChoices() public {
+        vm.expectRevert(abi.encodeWithSelector(RationHub.UnsupportedInterval.selector, 7));
+        new RationHub(7);
+        assertEq(new RationHub(1000).CRON_INTERVAL(), 1000);
+        assertEq(new RationHub(10).CRON_INTERVAL(), 10);
+        assertEq(new RationHub(10_000).CRON_INTERVAL(), 10_000);
+    }
+
     function test_rollEpoch_beforeFirstEpochReverts() public {
-        RationHub h = new RationHub();
+        RationHub h = new RationHub(100);
         vm.expectRevert(RationHub.NothingToStart.selector);
         h.rollEpoch();
     }
@@ -677,7 +685,7 @@ contract RationHubTest is Base {
     function test_hub_coverDebtAndWithdrawNative() public {
         MockDebtSystem d = new MockDebtSystem();
         vm.etch(SYSTEM_ADDR, address(d).code);
-        RationHub h = new RationHub();
+        RationHub h = new RationHub(100);
         vm.deal(address(h), 1 ether);
         MockDebtSystem(payable(SYSTEM_ADDR)).setDebt(address(h), 0.3 ether);
         h.coverDebt();

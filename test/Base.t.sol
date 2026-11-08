@@ -40,7 +40,7 @@ abstract contract Base is Test {
         vm.etch(SYSTEM_ADDR, address(impl).code);
         sys = MockSystem(payable(SYSTEM_ADDR));
 
-        hub = new RationHub();
+        hub = new RationHub(100);
         vaultA = new RationVault(IPayable(payable(PROXY_A)), address(hub), 6);
         vaultB = new RationVault(IPayable(payable(PROXY_B)), address(hub), 6);
         usdc = new MockUSDC();

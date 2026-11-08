@@ -21,10 +21,17 @@ contract RationHub is AbstractReactive {
     uint256 public constant BPS = 10_000;
 
     address internal constant LEGACY_SYSTEM = 0x0000000000000000000000000000000000fffFfF;
-    /// @dev Cron100 fires every 100 Lasna blocks (about two minutes). Used as the clock for
-    ///      timeouts and epoch rollover. Time itself is always read from block.timestamp.
+    /// @dev Cron topic0 values (every 10 / 100 / 1000 / 10000 Lasna blocks, about 10 s / 2 min / 17 min / 3 h).
+    ///      The cron is only a wake-up for timeouts and epoch rollover. Every tick is billed to the
+    ///      hub whether or not it does any work, so pick the longest interval that fits.
+    uint256 internal constant CRON10_TOPIC_0 =
+        0x04463f7c1651e6b9774d7f85c85bb94654e3c46ca79b0c16fb16d4183307b687;
     uint256 internal constant CRON100_TOPIC_0 =
         0xb49937fb8970e19fd46d48f7e3fb00d659deac0347f79cd7cb542f0fc1503c70;
+    uint256 internal constant CRON1000_TOPIC_0 =
+        0xe20b31294d84c3661ddc8f423abb9c70310d0cf172aa2714ead78029b325e3f4;
+    uint256 internal constant CRON10000_TOPIC_0 =
+        0xd214e1d84db704ed42d37f538ea9bf71e44ba28bc1cc088b2f5deca654677a56;
 
     uint256 internal constant SPENT_T0 =
         uint256(keccak256("Spent(address,address,address,uint256,uint256,uint256,uint256,uint256)"));
@@ -37,6 +44,7 @@ contract RationHub is AbstractReactive {
 
     // ---------------------------------------------------------------- errors
     error NotOwner();
+    error UnsupportedInterval(uint256 interval);
     error LaneExists(uint256 chainId);
     error UnknownLane(uint256 chainId);
     error TooManyLanes();
@@ -83,6 +91,8 @@ contract RationHub is AbstractReactive {
 
     // ---------------------------------------------------------------- state
     address public immutable OWNER;
+    uint256 public immutable CRON_INTERVAL;
+    uint256 internal immutable CRON_TOPIC;
 
     // Config. `budget`, `epochLength` apply from the next epoch; the others apply at once.
     uint256 public budget;
@@ -123,11 +133,22 @@ contract RationHub is AbstractReactive {
         _;
     }
 
-    constructor() payable {
+    /// @param cronInterval_ One of 10, 100, 1000, 10000 (Lasna blocks) for the housekeeping tick.
+    constructor(uint256 cronInterval_) payable {
         OWNER = msg.sender;
+        CRON_INTERVAL = cronInterval_;
+        CRON_TOPIC = _cronTopicFor(cronInterval_);
         SYSTEM.subscribe(
-            block.chainid, LEGACY_SYSTEM, CRON100_TOPIC_0, REACTIVE_IGNORE, REACTIVE_IGNORE, REACTIVE_IGNORE
+            block.chainid, LEGACY_SYSTEM, CRON_TOPIC, REACTIVE_IGNORE, REACTIVE_IGNORE, REACTIVE_IGNORE
         );
+    }
+
+    function _cronTopicFor(uint256 interval_) internal pure returns (uint256) {
+        if (interval_ == 10) return CRON10_TOPIC_0;
+        if (interval_ == 100) return CRON100_TOPIC_0;
+        if (interval_ == 1000) return CRON1000_TOPIC_0;
+        if (interval_ == 10_000) return CRON10000_TOPIC_0;
+        revert UnsupportedInterval(interval_);
     }
 
     // ================================================================ owner: setup
@@ -238,7 +259,7 @@ contract RationHub is AbstractReactive {
 
     /// @inheritdoc IReactive
     function react(LogRecord calldata log_) external onlySystem {
-        if (log_.topic0 == CRON100_TOPIC_0) {
+        if (log_.topic0 == CRON_TOPIC) {
             if (log_.contractAddress == LEGACY_SYSTEM) _tick();
             return;
         }
