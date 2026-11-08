@@ -1,0 +1,103 @@
+import { parseAbi } from "viem";
+
+export const vaultAbi = parseAbi([
+  // views
+  "function slice() view returns (uint256)",
+  "function spentInEpoch() view returns (uint256)",
+  "function epochId() view returns (uint256)",
+  "function epochEnd() view returns (uint256)",
+  "function epochBudget() view returns (uint256)",
+  "function paused() view returns (bool)",
+  "function restrictRecipients() view returns (bool)",
+  "function owner() view returns (address)",
+  "function tokenAllowed(address) view returns (bool)",
+  "function recipientAllowed(address) view returns (bool)",
+  "function spenders(address) view returns (bool allowed, uint256 cap)",
+  "function spentBy(uint256 epoch, address spender) view returns (uint256)",
+  // owner writes
+  "function deposit(address token, uint256 amount)",
+  "function withdraw(address token, uint256 amount)",
+  "function setToken(address token, bool allowed)",
+  "function setSpender(address spender, bool allowed, uint256 cap)",
+  "function setRecipient(address to, bool allowed)",
+  "function setRestrictRecipients(bool enabled)",
+  "function setPaused(bool paused)",
+  "function coverDebt()",
+  // spending
+  "function spend(address token, address to, uint256 amount)",
+  // events
+  "event Spent(address indexed spender, address indexed token, address indexed to, uint256 amount, uint256 newSlice, uint256 epochId, uint256 seq, uint256 timestamp)",
+  "event Released(bytes32 indexed transferId, uint256 requested, uint256 actual, uint256 newSlice, uint256 epochId, uint256 seq, uint256 timestamp)",
+  "event Granted(bytes32 indexed transferId, uint256 amount, uint256 newSlice, uint256 epochId, uint256 seq, uint256 timestamp)",
+  "event EpochReset(uint256 indexed epochId, uint256 slice, uint256 epochEnd, uint256 budget, uint256 seq, uint256 timestamp)",
+  "event SpenderSet(address indexed spender, bool allowed, uint256 cap)",
+  "event Deposited(address indexed token, uint256 amount)",
+  "event Withdrawn(address indexed token, address indexed to, uint256 amount)",
+  "event PauseChanged(bool paused)",
+  "event TokenSet(address indexed token, bool allowed)",
+  // errors (so failures decode into plain words)
+  "error Paused()",
+  "error NotSpender(address who)",
+  "error TokenNotAllowed(address token)",
+  "error RecipientNotAllowed(address to)",
+  "error ZeroAmount()",
+  "error ZeroAddress()",
+  "error EpochExpired(uint256 epochEnd, uint256 nowTs)",
+  "error ExceedsSlice(uint256 requested, uint256 slice)",
+  "error ExceedsSpenderCap(uint256 requested, uint256 remainingCap)",
+  "error DecimalsMismatch(uint8 expected, uint8 actual)",
+  "error ExceedsUnallocated(uint256 requested, uint256 unallocated)",
+  "error OwnableUnauthorizedAccount(address account)",
+  "error ERC20InsufficientBalance(address sender, uint256 balance, uint256 needed)",
+  "error ERC20InsufficientAllowance(address spender, uint256 allowance, uint256 needed)",
+]);
+
+export const hubAbi = parseAbi([
+  "function OWNER() view returns (address)",
+  "function CRON_INTERVAL() view returns (uint256)",
+  "function budget() view returns (uint256)",
+  "function epochLength() view returns (uint256)",
+  "function refillBps() view returns (uint16)",
+  "function timeout() view returns (uint256)",
+  "function minTransfer() view returns (uint256)",
+  "function callbackGas() view returns (uint64)",
+  "function epochId() view returns (uint256)",
+  "function epochStart() view returns (uint256)",
+  "function epochEnd() view returns (uint256)",
+  "function epochBudget() view returns (uint256)",
+  "function nonce() view returns (uint256)",
+  "function laneCount() view returns (uint256)",
+  "function laneAt(uint256) view returns ((uint256 chainId, address vault, uint16 weightBps, uint16 lowBps, bool active, uint256 slice, uint256 pendingOut, uint256 lastSeq, bytes32 inbound))",
+  "function setConfig(uint256 budget, uint256 epochLength, uint16 refillBps, uint256 timeout, uint256 minTransfer)",
+  "function setLaneParams(uint256 chainId, uint16 weightBps, uint16 lowBps)",
+  "function startEpoch()",
+  "function rollEpoch()",
+  "function coverDebt()",
+  "event TransferRequested(bytes32 indexed transferId, uint256 fromChain, uint256 toChain, uint256 amount, uint256 epochId)",
+  "event TransferReleased(bytes32 indexed transferId, uint256 requested, uint256 actual)",
+  "event TransferGranting(bytes32 indexed transferId, uint256 amount, uint8 attempt)",
+  "event TransferDone(bytes32 indexed transferId, uint256 amount, uint256 latency)",
+  "event TransferExpired(bytes32 indexed transferId)",
+  "event EpochStarted(uint256 indexed epochId, uint256 budget, uint256 epochStart, uint256 epochEnd)",
+  "event ConfigSet(uint256 budget, uint256 epochLength, uint16 refillBps, uint256 timeout, uint256 minTransfer)",
+  "error NotOwner()",
+  "error BadWeights(uint256 sum)",
+  "error BadConfig()",
+  "error EpochStillRunning(uint256 epochEnd)",
+]);
+
+/** System contract and callback proxies share this surface. */
+export const payableAbi = parseAbi([
+  "function reserves(address) view returns (uint256)",
+  "function debts(address) view returns (uint256)",
+  "function depositTo(address) payable",
+]);
+
+export const erc20Abi = parseAbi([
+  "function balanceOf(address) view returns (uint256)",
+  "function allowance(address owner, address spender) view returns (uint256)",
+  "function approve(address spender, uint256 amount) returns (bool)",
+  "function faucet(address to, uint256 amount)",
+  "function symbol() view returns (string)",
+  "function decimals() view returns (uint8)",
+]);
