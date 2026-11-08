@@ -1,0 +1,161 @@
+{
+  "generatedAt": "2026-11-08T12:04:43.164Z",
+  "hub": "0x364d0C8281b382A18Eddd125098338153194c29b",
+  "lanes": [
+    {
+      "name": "Base Sepolia",
+      "chainId": 84532,
+      "vault": "0xAca373fd8101C81bbe85C84A87336e51b414261D",
+      "token": "0x21c3F809d9627EEDb199731CD78fDf3deEf94De4"
+    },
+    {
+      "name": "Unichain Sepolia",
+      "chainId": 1301,
+      "vault": "0x21c3F809d9627EEDb199731CD78fDf3deEf94De4",
+      "token": "0x364d0C8281b382A18Eddd125098338153194c29b"
+    }
+  ],
+  "loops": [
+    {
+      "direction": "Base Sepolia spends, Unichain Sepolia donates",
+      "transferId": "0xdafaa2e6ec404755e692edd45121245d80783199a5af9c6526f943401d969525",
+      "amountRequested": "250",
+      "amountMoved": "250",
+      "slicesBefore": {
+        "Base Sepolia": "500",
+        "Unichain Sepolia": "500"
+      },
+      "slicesAfter": {
+        "Base Sepolia": "400",
+        "Unichain Sepolia": "250"
+      },
+      "steps": [
+        {
+          "step": "1. Spend (origin event)",
+          "chain": "Base Sepolia",
+          "tx": "0x2dcbfad6afdb4e7c82f6611f7fdff7416becf2f71900f9270b47696c062f6ce3",
+          "url": "https://sepolia.basescan.org/tx/0x2dcbfad6afdb4e7c82f6611f7fdff7416becf2f71900f9270b47696c062f6ce3",
+          "ts": 1794139343
+        },
+        {
+          "step": "2. Hub reacts, requests release",
+          "chain": "Reactive Lasna",
+          "tx": "0x044aaec755125c0750c904e7eb0f4a0c68c1dc5be065372085766d63b996832a",
+          "url": "https://lasna.reactscan.net/tx/0x044aaec755125c0750c904e7eb0f4a0c68c1dc5be065372085766d63b996832a",
+          "ts": 1794139342
+        },
+        {
+          "step": "3. Release callback (donor slice shrinks)",
+          "chain": "Unichain Sepolia",
+          "tx": "0xecc6d4ca357921d153dbca1754e8d0bb20f88c68755e8a1ae42038ab3f21e9af",
+          "url": "https://sepolia.uniscan.xyz/tx/0xecc6d4ca357921d153dbca1754e8d0bb20f88c68755e8a1ae42038ab3f21e9af",
+          "ts": 1794139345
+        },
+        {
+          "step": "4. Hub reacts to Released, requests grant",
+          "chain": "Reactive Lasna",
+          "tx": "0xbbff2e5585cac90887f51f85a58da2c09c918d045e9591f650cf7800ae0eecaa",
+          "url": "https://lasna.reactscan.net/tx/0xbbff2e5585cac90887f51f85a58da2c09c918d045e9591f650cf7800ae0eecaa",
+          "ts": 1794139344
+        },
+        {
+          "step": "5. Grant callback (spending slice grows)",
+          "chain": "Base Sepolia",
+          "tx": "0x7ed7f57e2487a1b68c0360b7dccc697236ce92404dd537a0e3e25552c92e9b38",
+          "url": "https://sepolia.basescan.org/tx/0x7ed7f57e2487a1b68c0360b7dccc697236ce92404dd537a0e3e25552c92e9b38",
+          "ts": 1794139346
+        },
+        {
+          "step": "6. Hub reacts to Granted, transfer done",
+          "chain": "Reactive Lasna",
+          "tx": "0x0cc087da005396d158af4ad82c4b4b9b7ad0b46934772bc106afcb81d9e62567",
+          "url": "https://lasna.reactscan.net/tx/0x0cc087da005396d158af4ad82c4b4b9b7ad0b46934772bc106afcb81d9e62567",
+          "ts": 1794139347
+        }
+      ],
+      "latency": {
+        "eventToReactiveTx": -1,
+        "reactiveTxToRelease": 3,
+        "releaseToGrant": 1,
+        "totalSpendToGrant": 3,
+        "totalSpendToDone": 4
+      }
+    },
+    {
+      "direction": "Unichain Sepolia spends, Base Sepolia donates",
+      "transferId": "0x138648e71391002c5485cefba802a6afd2e4e3b67d840b40b71a1a6ff24f4604",
+      "amountRequested": "200",
+      "amountMoved": "200",
+      "slicesBefore": {
+        "Base Sepolia": "400",
+        "Unichain Sepolia": "250"
+      },
+      "slicesAfter": {
+        "Base Sepolia": "200",
+        "Unichain Sepolia": "350"
+      },
+      "steps": [
+        {
+          "step": "1. Spend (origin event)",
+          "chain": "Unichain Sepolia",
+          "tx": "0x53400ff895b54d2784e3e25c53ed6fd56c197424e79258dccf8bca80e9c5c7e9",
+          "url": "https://sepolia.uniscan.xyz/tx/0x53400ff895b54d2784e3e25c53ed6fd56c197424e79258dccf8bca80e9c5c7e9",
+          "ts": 1794139364
+        },
+        {
+          "step": "2. Hub reacts, requests release",
+          "chain": "Reactive Lasna",
+          "tx": "0x372587f697037eb7a1df3aa04a65eda90a86a4bc2708a4264f875c05a5f7d23d",
+          "url": "https://lasna.reactscan.net/tx/0x372587f697037eb7a1df3aa04a65eda90a86a4bc2708a4264f875c05a5f7d23d",
+          "ts": 1794139363
+        },
+        {
+          "step": "3. Release callback (donor slice shrinks)",
+          "chain": "Base Sepolia",
+          "tx": "0xb0bb021890e4a8e6ca5e95d23de250d4a13f30ef8f624158875f12db3299234d",
+          "url": "https://sepolia.basescan.org/tx/0xb0bb021890e4a8e6ca5e95d23de250d4a13f30ef8f624158875f12db3299234d",
+          "ts": 1794139366
+        },
+        {
+          "step": "4. Hub reacts to Released, requests grant",
+          "chain": "Reactive Lasna",
+          "tx": "0x53cd93536d719d8fc0257e37e8d788108d09c0997c7aa4055acb36dfabce3822",
+          "url": "https://lasna.reactscan.net/tx/0x53cd93536d719d8fc0257e37e8d788108d09c0997c7aa4055acb36dfabce3822",
+          "ts": 1794139365
+        },
+        {
+          "step": "5. Grant callback (spending slice grows)",
+          "chain": "Unichain Sepolia",
+          "tx": "0xc46c55e58fcbf7a22279898b04fd2f2a2dca977bedbe7a08ad8c19f02710242c",
+          "url": "https://sepolia.uniscan.xyz/tx/0xc46c55e58fcbf7a22279898b04fd2f2a2dca977bedbe7a08ad8c19f02710242c",
+          "ts": 1794139368
+        },
+        {
+          "step": "6. Hub reacts to Granted, transfer done",
+          "chain": "Reactive Lasna",
+          "tx": "0x483d818f6e4c188e89696f612b59849c3bfb601f7545903b1220ebe9eaeba392",
+          "url": "https://lasna.reactscan.net/tx/0x483d818f6e4c188e89696f612b59849c3bfb601f7545903b1220ebe9eaeba392",
+          "ts": 1794139368
+        }
+      ],
+      "latency": {
+        "eventToReactiveTx": -1,
+        "reactiveTxToRelease": 3,
+        "releaseToGrant": 2,
+        "totalSpendToGrant": 4,
+        "totalSpendToDone": 4
+      }
+    }
+  ],
+  "final": {
+    "budget": "1000",
+    "slices": [
+      "200",
+      "350"
+    ],
+    "spent": [
+      "350",
+      "100"
+    ]
+  }
+}

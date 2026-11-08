@@ -131,3 +131,28 @@ Cron ticks are billed to the subscriber whether or not `react()` does anything.
    where it is, so budget is under-used, never overspent. The Fuel page must show this.
 6. **Callbacks are unordered and may repeat.** All state transitions are keyed by `transferId`
    and are idempotent, and slices are decreased before they are increased (two-phase handoff).
+
+## Confirmed on the live testnets (2026-11-08)
+
+These were open questions above. They are now settled by real transactions
+(see `docs/EVIDENCE.md`).
+
+- **Deploying to Lasna** works with a plain `forge create --broadcast --constructor-args 1000`
+  (no `--legacy`, no gas flags). `forge script` also works against Base and Unichain Sepolia.
+- **Callbacks arrive and authenticate.** The vaults' `onlyServiceProvider` and
+  `onlyCallbackSender` checks pass with the hub as the injected first argument.
+  Epoch resets, releases and grants all landed through the real proxies.
+- **Reactive transactions** appear on Reactscan as a `trigger(contract, log)` call to the system
+  contract. One `react()` cost about 276,000 gas and 0.0276 lREACT at 100 gwei, which matches the
+  fee formula. A full handoff (three reactive transactions) is about 0.08 lREACT.
+- **Callback fee** on Base/Unichain Sepolia was about 0.000003 ETH per callback.
+- **Latency** spend to grant landed was 3 and 4 seconds in the two measured loops.
+- **Block timestamps** on Lasna are real wall-clock seconds, so `block.timestamp` is safe there.
+  (Log objects returned by `eth_getTransactionReceipt` show `blockTimestamp: 0x0`; read the
+  block instead.)
+- **Explorer links**: `https://lasna.reactscan.net/tx/<hash>` and `/address/<addr>` resolve;
+  Base `https://sepolia.basescan.org`, Unichain `https://sepolia.uniscan.xyz`.
+- **Public RPC flakiness**: DNS lookups from Foundry and viem occasionally fail on the public
+  endpoints. Scripts retry; nothing depends on a single call succeeding.
+
+Still not measured: behaviour when a destination vault is in debt (covered in `docs/AUDIT.md`).

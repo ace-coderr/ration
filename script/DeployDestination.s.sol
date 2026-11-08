@@ -22,7 +22,8 @@ contract DeployDestination is Script {
         RationVault vault = new RationVault(IPayable(payable(proxy)), hub, 6);
         vault.setToken(address(token), true);
         vault.setSpender(agent, true, 0);
-        token.faucet(msg.sender, seed);
+        address me = vm.addr(pk);
+        token.faucet(me, seed);
         token.approve(address(vault), seed);
         vault.deposit(address(token), seed);
         vm.stopBroadcast();
