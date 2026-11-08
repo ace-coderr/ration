@@ -39,8 +39,9 @@ export const vaultAbi = parseAbi([
   "function spend(address token, address to, uint256 amount)",
   "event Spent(address indexed spender, address indexed token, address indexed to, uint256 amount, uint256 newSlice, uint256 epochId, uint256 seq, uint256 timestamp)",
   "event Released(bytes32 indexed transferId, uint256 requested, uint256 actual, uint256 newSlice, uint256 epochId, uint256 seq, uint256 timestamp)",
+  "event EpochClosed(uint256 indexed epochId, uint256 spent, uint256 seq, uint256 timestamp)",
+  "event EpochReset(uint256 indexed epochId, uint256 slice, uint256 epochStart, uint256 epochEnd, uint256 budget, uint256 seq, uint256 timestamp)",
   "event Granted(bytes32 indexed transferId, uint256 amount, uint256 newSlice, uint256 epochId, uint256 seq, uint256 timestamp)",
-  "event EpochReset(uint256 indexed epochId, uint256 slice, uint256 epochEnd, uint256 budget, uint256 seq, uint256 timestamp)",
 ]);
 
 export const hubAbi = parseAbi([
@@ -53,6 +54,8 @@ export const hubAbi = parseAbi([
   "event TransferGranting(bytes32 indexed transferId, uint256 amount, uint8 attempt)",
   "event TransferDone(bytes32 indexed transferId, uint256 amount, uint256 latency)",
   "event TransferExpired(bytes32 indexed transferId)",
+  "event EpochClosing(uint256 indexed epochId)",
+  "event EpochStarted(uint256 indexed epochId, uint256 budget, uint256 epochStart, uint256 epochEnd)",
 ]);
 
 export const erc20Abi = parseAbi(["function balanceOf(address) view returns (uint256)"]);

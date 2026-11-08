@@ -1,24 +1,24 @@
 {
-  "generatedAt": "2026-11-08T12:04:43.164Z",
-  "hub": "0x364d0C8281b382A18Eddd125098338153194c29b",
+  "generatedAt": "2026-11-08T14:31:15.707Z",
+  "hub": "0x80Ce4cDBcBb3d8D4A24C54bC21458Ad5A497C2b6",
   "lanes": [
     {
       "name": "Base Sepolia",
       "chainId": 84532,
-      "vault": "0xAca373fd8101C81bbe85C84A87336e51b414261D",
-      "token": "0x21c3F809d9627EEDb199731CD78fDf3deEf94De4"
+      "vault": "0x40f73C16A298E721474eA2A4E8FcbC2D1F02340C",
+      "token": "0xA2E0Ed068299a2D9E1e411bdB24D19E38d7fA3a3"
     },
     {
       "name": "Unichain Sepolia",
       "chainId": 1301,
-      "vault": "0x21c3F809d9627EEDb199731CD78fDf3deEf94De4",
-      "token": "0x364d0C8281b382A18Eddd125098338153194c29b"
+      "vault": "0x12405d8bD4B0B283D2020F60F1052A6C3b5c546E",
+      "token": "0x58FcC0318D4A1dcF43aF155a414121014B4C0Aa2"
     }
   ],
   "loops": [
     {
       "direction": "Base Sepolia spends, Unichain Sepolia donates",
-      "transferId": "0xdafaa2e6ec404755e692edd45121245d80783199a5af9c6526f943401d969525",
+      "transferId": "0xeba0a25b9b1094663dffafd2795434cdbb30bb07e96ff1a65f9ce84f5504ead8",
       "amountRequested": "250",
       "amountMoved": "250",
       "slicesBefore": {
@@ -33,44 +33,44 @@
         {
           "step": "1. Spend (origin event)",
           "chain": "Base Sepolia",
-          "tx": "0x2dcbfad6afdb4e7c82f6611f7fdff7416becf2f71900f9270b47696c062f6ce3",
-          "url": "https://sepolia.basescan.org/tx/0x2dcbfad6afdb4e7c82f6611f7fdff7416becf2f71900f9270b47696c062f6ce3",
-          "ts": 1794139343
+          "tx": "0x0c6464a062eb5c4d04a83cdc857f5dca3ef0f0ed06e87e49fc555fa8a9490a53",
+          "url": "https://sepolia.basescan.org/tx/0x0c6464a062eb5c4d04a83cdc857f5dca3ef0f0ed06e87e49fc555fa8a9490a53",
+          "ts": 1794148237
         },
         {
           "step": "2. Hub reacts, requests release",
           "chain": "Reactive Lasna",
-          "tx": "0x044aaec755125c0750c904e7eb0f4a0c68c1dc5be065372085766d63b996832a",
-          "url": "https://lasna.reactscan.net/tx/0x044aaec755125c0750c904e7eb0f4a0c68c1dc5be065372085766d63b996832a",
-          "ts": 1794139342
+          "tx": "0x202047fe487303450281df48b02e4092f59dea667e80cfcc0d78099b4ea4ba42",
+          "url": "https://lasna.reactscan.net/tx/0x202047fe487303450281df48b02e4092f59dea667e80cfcc0d78099b4ea4ba42",
+          "ts": 1794148236
         },
         {
           "step": "3. Release callback (donor slice shrinks)",
           "chain": "Unichain Sepolia",
-          "tx": "0xecc6d4ca357921d153dbca1754e8d0bb20f88c68755e8a1ae42038ab3f21e9af",
-          "url": "https://sepolia.uniscan.xyz/tx/0xecc6d4ca357921d153dbca1754e8d0bb20f88c68755e8a1ae42038ab3f21e9af",
-          "ts": 1794139345
+          "tx": "0x23dcdd247b5f54964ee70f8c2a3f34ad25dffc7f6ec04508766d5edd2efb89a0",
+          "url": "https://sepolia.uniscan.xyz/tx/0x23dcdd247b5f54964ee70f8c2a3f34ad25dffc7f6ec04508766d5edd2efb89a0",
+          "ts": 1794148239
         },
         {
           "step": "4. Hub reacts to Released, requests grant",
           "chain": "Reactive Lasna",
-          "tx": "0xbbff2e5585cac90887f51f85a58da2c09c918d045e9591f650cf7800ae0eecaa",
-          "url": "https://lasna.reactscan.net/tx/0xbbff2e5585cac90887f51f85a58da2c09c918d045e9591f650cf7800ae0eecaa",
-          "ts": 1794139344
+          "tx": "0x3b4ff1c1f46d1046b44ceee0d586439adcf307e253c9e3f99eb8c851427fb945",
+          "url": "https://lasna.reactscan.net/tx/0x3b4ff1c1f46d1046b44ceee0d586439adcf307e253c9e3f99eb8c851427fb945",
+          "ts": 1794148238
         },
         {
           "step": "5. Grant callback (spending slice grows)",
           "chain": "Base Sepolia",
-          "tx": "0x7ed7f57e2487a1b68c0360b7dccc697236ce92404dd537a0e3e25552c92e9b38",
-          "url": "https://sepolia.basescan.org/tx/0x7ed7f57e2487a1b68c0360b7dccc697236ce92404dd537a0e3e25552c92e9b38",
-          "ts": 1794139346
+          "tx": "0x31b7fd6dadaf060d29c3528c46ad4d14232c9cea75cc83b20b1d075b803e1ef7",
+          "url": "https://sepolia.basescan.org/tx/0x31b7fd6dadaf060d29c3528c46ad4d14232c9cea75cc83b20b1d075b803e1ef7",
+          "ts": 1794148240
         },
         {
           "step": "6. Hub reacts to Granted, transfer done",
           "chain": "Reactive Lasna",
-          "tx": "0x0cc087da005396d158af4ad82c4b4b9b7ad0b46934772bc106afcb81d9e62567",
-          "url": "https://lasna.reactscan.net/tx/0x0cc087da005396d158af4ad82c4b4b9b7ad0b46934772bc106afcb81d9e62567",
-          "ts": 1794139347
+          "tx": "0x4a81f4bfb0bf3175b962bccef204960fb862f697b789ce9c35bad1d17444cc7f",
+          "url": "https://lasna.reactscan.net/tx/0x4a81f4bfb0bf3175b962bccef204960fb862f697b789ce9c35bad1d17444cc7f",
+          "ts": 1794148240
         }
       ],
       "latency": {
@@ -78,12 +78,12 @@
         "reactiveTxToRelease": 3,
         "releaseToGrant": 1,
         "totalSpendToGrant": 3,
-        "totalSpendToDone": 4
+        "totalSpendToDone": 3
       }
     },
     {
       "direction": "Unichain Sepolia spends, Base Sepolia donates",
-      "transferId": "0x138648e71391002c5485cefba802a6afd2e4e3b67d840b40b71a1a6ff24f4604",
+      "transferId": "0xe97b42ad57cf2490104dead3a22f32cff0263e292a124cd0459d0aedbda92908",
       "amountRequested": "200",
       "amountMoved": "200",
       "slicesBefore": {
@@ -98,52 +98,52 @@
         {
           "step": "1. Spend (origin event)",
           "chain": "Unichain Sepolia",
-          "tx": "0x53400ff895b54d2784e3e25c53ed6fd56c197424e79258dccf8bca80e9c5c7e9",
-          "url": "https://sepolia.uniscan.xyz/tx/0x53400ff895b54d2784e3e25c53ed6fd56c197424e79258dccf8bca80e9c5c7e9",
-          "ts": 1794139364
+          "tx": "0xb4b830ff2f10b0213e71a401d08f293e624ea01ed033de2b863e3369f4cf5c35",
+          "url": "https://sepolia.uniscan.xyz/tx/0xb4b830ff2f10b0213e71a401d08f293e624ea01ed033de2b863e3369f4cf5c35",
+          "ts": 1794148260
         },
         {
           "step": "2. Hub reacts, requests release",
           "chain": "Reactive Lasna",
-          "tx": "0x372587f697037eb7a1df3aa04a65eda90a86a4bc2708a4264f875c05a5f7d23d",
-          "url": "https://lasna.reactscan.net/tx/0x372587f697037eb7a1df3aa04a65eda90a86a4bc2708a4264f875c05a5f7d23d",
-          "ts": 1794139363
+          "tx": "0xe01a2a7e42036507e9e952b992cad55a1bdb5db582a7857581418bc63ff5ccee",
+          "url": "https://lasna.reactscan.net/tx/0xe01a2a7e42036507e9e952b992cad55a1bdb5db582a7857581418bc63ff5ccee",
+          "ts": 1794148259
         },
         {
           "step": "3. Release callback (donor slice shrinks)",
           "chain": "Base Sepolia",
-          "tx": "0xb0bb021890e4a8e6ca5e95d23de250d4a13f30ef8f624158875f12db3299234d",
-          "url": "https://sepolia.basescan.org/tx/0xb0bb021890e4a8e6ca5e95d23de250d4a13f30ef8f624158875f12db3299234d",
-          "ts": 1794139366
+          "tx": "0x489e26fee50fe411218408d1e7061e13a320a34283b49e3ed30cd1007a7d14b2",
+          "url": "https://sepolia.basescan.org/tx/0x489e26fee50fe411218408d1e7061e13a320a34283b49e3ed30cd1007a7d14b2",
+          "ts": 1794148261
         },
         {
           "step": "4. Hub reacts to Released, requests grant",
           "chain": "Reactive Lasna",
-          "tx": "0x53cd93536d719d8fc0257e37e8d788108d09c0997c7aa4055acb36dfabce3822",
-          "url": "https://lasna.reactscan.net/tx/0x53cd93536d719d8fc0257e37e8d788108d09c0997c7aa4055acb36dfabce3822",
-          "ts": 1794139365
+          "tx": "0xf9d2c4b807ee2365fdf1dd14f3248523b3ffdb764a6ea58ef6d3409bc5a5841b",
+          "url": "https://lasna.reactscan.net/tx/0xf9d2c4b807ee2365fdf1dd14f3248523b3ffdb764a6ea58ef6d3409bc5a5841b",
+          "ts": 1794148260
         },
         {
           "step": "5. Grant callback (spending slice grows)",
           "chain": "Unichain Sepolia",
-          "tx": "0xc46c55e58fcbf7a22279898b04fd2f2a2dca977bedbe7a08ad8c19f02710242c",
-          "url": "https://sepolia.uniscan.xyz/tx/0xc46c55e58fcbf7a22279898b04fd2f2a2dca977bedbe7a08ad8c19f02710242c",
-          "ts": 1794139368
+          "tx": "0xfa19b6e1abffa01f2c7a6cc84ef24cf978954c858ebadc67f2c8f5009f50c121",
+          "url": "https://sepolia.uniscan.xyz/tx/0xfa19b6e1abffa01f2c7a6cc84ef24cf978954c858ebadc67f2c8f5009f50c121",
+          "ts": 1794148263
         },
         {
           "step": "6. Hub reacts to Granted, transfer done",
           "chain": "Reactive Lasna",
-          "tx": "0x483d818f6e4c188e89696f612b59849c3bfb601f7545903b1220ebe9eaeba392",
-          "url": "https://lasna.reactscan.net/tx/0x483d818f6e4c188e89696f612b59849c3bfb601f7545903b1220ebe9eaeba392",
-          "ts": 1794139368
+          "tx": "0x2fc34d7f24da15a914eccb5fa11209df0b8a10974b2a8b518c72e04cdd8656b2",
+          "url": "https://lasna.reactscan.net/tx/0x2fc34d7f24da15a914eccb5fa11209df0b8a10974b2a8b518c72e04cdd8656b2",
+          "ts": 1794148262
         }
       ],
       "latency": {
         "eventToReactiveTx": -1,
-        "reactiveTxToRelease": 3,
+        "reactiveTxToRelease": 2,
         "releaseToGrant": 2,
-        "totalSpendToGrant": 4,
-        "totalSpendToDone": 4
+        "totalSpendToGrant": 3,
+        "totalSpendToDone": 2
       }
     }
   ],
