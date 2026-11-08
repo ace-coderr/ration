@@ -3,21 +3,25 @@ import { Check, Copy } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { addrUrl, type LaneCfg } from "@/lib/config";
 import { short } from "@/lib/format";
+import { HelpHint, type HelpKey } from "./HelpHint";
 
-export function PageHead({ eyebrow, title, lede }: { eyebrow: string; title: string; lede: string }) {
+export function PageHead({ eyebrow, title, lede, help }: { eyebrow: string; title: string; lede: string; help?: HelpKey }) {
   return (
     <header className="page-head">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <span className="eyebrow">{eyebrow}</span>
       </motion.div>
-      <motion.h1
-        className="title"
-        initial={{ opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.04 }}
-      >
-        {title}
-      </motion.h1>
+      <div className="title-row">
+        <motion.h1
+          className="title"
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.04 }}
+        >
+          {title}
+        </motion.h1>
+        {help && <HelpHint id={help} />}
+      </div>
       <motion.p className="lede" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.18, duration: 0.5 }}>
         {lede}
       </motion.p>

@@ -40,7 +40,7 @@ export function Proof() {
 
   return (
     <>
-      <PageHead eyebrow="Proof" title="Check it yourself." lede="Nothing here is a claim. It's all read from the chains right now, and every number links to a transaction you can open." />
+      <PageHead help="proof" eyebrow="Proof" title="Check it yourself." lede="Nothing here is a claim. It's all read from the chains right now, and every number links to a transaction you can open." />
       <Stagger>
         <Rise>
           <div className="card grid two" style={{ alignItems: "center" }}>

@@ -105,7 +105,7 @@ export function Fuel() {
   const worst = items.some((i) => i.debt > 0n) ? "bad" : items.some((i) => Number(i.reserve) / 1e18 / i.cost < WARN_BELOW_OPS) ? "warn" : "ok";
   return (
     <>
-      <PageHead eyebrow="Fuel" title="Keep it running." lede="The hub and every vault pay small fees to do their work. If one runs dry, it stops until you top it up. Your budget stays safe either way." />
+      <PageHead help="fuel" eyebrow="Fuel" title="Keep it running." lede="The hub and every vault pay small fees to do their work. If one runs dry, it stops until you top it up. Your budget stays safe either way." />
       {isLoading ? <div className="stack"><Skeleton h={260} r={26} /><Skeleton h={260} r={26} /></div>
         : isError && !data ? <StateCard tone="bad" title="Can't read the fuel levels" action={<button className="btn auto" onClick={() => refetch()}>Try again</button>}>The chains did not answer.</StateCard>
         : (

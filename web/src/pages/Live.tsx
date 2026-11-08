@@ -175,7 +175,7 @@ export function Live() {
   const left = m ? Math.max(0, m.epochEnd - m.chainTime) : 0;
   return (
     <>
-      <PageHead eyebrow="Live" title="One budget. Every chain." lede="Each chain holds a slice of one limit. When a chain runs low, the slice moves to it. Watch the blocks slide." />
+      <PageHead help="live" eyebrow="Live" title="One budget. Every chain." lede="Each chain holds a slice of one limit. When a chain runs low, the slice moves to it. Watch the blocks slide." />
       {snap.isError && !snap.data ? (
         <StateCard tone="bad" title="Can't reach the chains" action={<button className="btn auto" onClick={() => snap.refetch()}>Try again</button>}>
           The public RPCs did not answer. Nothing is wrong with your budget. This page retries on its own.

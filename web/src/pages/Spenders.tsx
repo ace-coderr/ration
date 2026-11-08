@@ -137,7 +137,7 @@ export function Spenders() {
 
   return (
     <>
-      <PageHead eyebrow="Spenders" title="Who can spend." lede="People and agents you've allowed to spend from your vaults. Each one has a cap. Revoking takes effect on the next block." />
+      <PageHead help="spenders" eyebrow="Spenders" title="Who can spend." lede="People and agents you've allowed to spend from your vaults. Each one has a cap. Revoking takes effect on the next block." />
       <Stagger>
         <Rise>
           {loading ? <div className="stack"><Skeleton h={120} r={26} /><Skeleton h={120} r={26} /></div>

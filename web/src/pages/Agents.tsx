@@ -161,7 +161,7 @@ function Recent() {
 export function Agents() {
   return (
     <>
-      <PageHead eyebrow="Agents" title="Let an AI spend within the rules." lede="Connect an agent through MCP. It can read the budget and ask to spend. The vaults decide, and say why when they refuse." />
+      <PageHead help="agents" eyebrow="Agents" title="Let an AI spend within the rules." lede="Connect an agent through MCP. It can read the budget and ask to spend. The vaults decide, and say why when they refuse." />
       <Stagger>
         <Rise>
           <div className="card stack">

@@ -55,6 +55,29 @@ export function Landing() {
         </Stagger>
       </section>
 
+      <section className="landing-strip" aria-labelledby="hiw3">
+        <div className="row between wrap" style={{ marginBottom: 14, gap: 12 }}>
+          <h2 id="hiw3" className="h2">How it works in 3 steps</h2>
+          <Link to="/how-it-works" className="btn small auto">Read the full explainer <ArrowRight size={16} /></Link>
+        </div>
+        <div className="hw-strip" role="list">
+          {[
+            ["1", "Set one budget", "Pick an amount and a period.", "/how-it-works#idea"],
+            ["2", "Allow who can spend", "Add people or AI agents, with caps.", "/how-it-works#who"],
+            ["3", "Spend anywhere, never over", "The limit follows the spending.", "/how-it-works#spending"],
+          ].map(([n, t, d, to], i) => (
+            <div className="hw-strip-item" role="listitem" key={n}>
+              <Link to={to} className="card hw-step">
+                <span className="hw-n">{n}</span>
+                <b>{t}</b>
+                <span className="muted">{d}</span>
+              </Link>
+              {i < 2 && <ArrowRight className="hw-arrow" size={22} aria-hidden />}
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section style={{ marginTop: 72 }} aria-labelledby="how">
         <span className="eyebrow">How it moves</span>
         <h2 id="how" className="title" style={{ fontSize: "clamp(32px,4.6vw,54px)" }}>Three steps. No one in the middle.</h2>

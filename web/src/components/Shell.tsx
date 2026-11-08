@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  BadgeCheck, Bot, Copy, Fuel, Gauge, LogOut, Moon, ScrollText, SlidersHorizontal, Sun, Users, Vault, Wallet, X, AlertTriangle, WifiOff,
+  BadgeCheck, BookOpen, Bot, Copy, Fuel, Gauge, LogOut, Moon, ScrollText, SlidersHorizontal, Sun, Users, Vault, Wallet, X, AlertTriangle, WifiOff,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation, Link } from "react-router-dom";
@@ -16,6 +16,7 @@ import { useUi } from "@/state/ui";
 import { KNOWN_CHAIN_IDS, useWallet } from "@/state/wallet";
 
 const NAV = [
+  { to: "/how-it-works", label: "How it works", short: "How", icon: BookOpen },
   { to: "/live", label: "Live budget", short: "Live", icon: Gauge },
   { to: "/budget", label: "Set budget", short: "Budget", icon: SlidersHorizontal },
   { to: "/vaults", label: "Vaults", short: "Vaults", icon: Vault },
@@ -196,6 +197,7 @@ export function Footer() {
           chains; only the right to spend them moves.
         </small>
         <nav className="row wrap" style={{ gap: 18, fontSize: 14 }} aria-label="Footer">
+          <Link to="/how-it-works">How it works</Link>
           <Link to="/proof">Proof</Link>
           <a href={LASNA.explorer} target="_blank" rel="noreferrer">Reactscan</a>
           <Link to="/agents">Agents</Link>
@@ -213,7 +215,20 @@ export function Shell() {
   const { theme, toggleTheme } = useUi();
   const loc = useLocation();
   const main = useRef<HTMLDivElement>(null);
-  useEffect(() => { window.scrollTo({ top: 0 }); }, [loc.pathname]);
+  // Jump to a section anchor (for example /how-it-works#spending) once the page has rendered; otherwise go to the top.
+  useEffect(() => {
+    if (!loc.hash) { window.scrollTo({ top: 0 }); return; }
+    const id = decodeURIComponent(loc.hash.slice(1));
+    let tries = 0;
+    const t = setInterval(() => {
+      const el = document.getElementById(id);
+      if (el || ++tries > 25) {
+        clearInterval(t);
+        el?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+      }
+    }, 80);
+    return () => clearInterval(t);
+  }, [loc.pathname, loc.hash]);
   return (
     <div className="app">
       <header className="topbar">

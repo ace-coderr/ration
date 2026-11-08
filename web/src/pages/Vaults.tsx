@@ -180,7 +180,7 @@ export function Vaults() {
   const { data, isLoading, isError, refetch } = useSnapshot();
   return (
     <>
-      <PageHead eyebrow="Vaults" title="Where the money sits." lede="One vault per chain. Each one holds real tokens and a slice of the limit. Only the owner can move funds out." />
+      <PageHead help="vaults" eyebrow="Vaults" title="Where the money sits." lede="One vault per chain. Each one holds real tokens and a slice of the limit. Only the owner can move funds out." />
       {isLoading ? <div className="stack"><Skeleton h={300} r={26} /><Skeleton h={300} r={26} /></div>
         : isError && !data ? <StateCard tone="bad" title="Can't read the vaults" action={<button className="btn auto" onClick={() => refetch()}>Try again</button>}>The chains did not answer.</StateCard>
         : (

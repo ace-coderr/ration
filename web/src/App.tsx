@@ -10,6 +10,7 @@ import { Fuel } from "./pages/Fuel";
 import { Agents } from "./pages/Agents";
 import { Proof } from "./pages/Proof";
 import { Connect } from "./pages/Connect";
+import { HowItWorks } from "./pages/HowItWorks";
 import { useEffect } from "react";
 import { refreshEvents } from "./state/data";
 
@@ -20,6 +21,7 @@ export function App() {
     <Routes>
       <Route element={<Shell />}>
         <Route index element={<Landing />} />
+        <Route path="how-it-works" element={<HowItWorks />} />
         <Route path="live" element={<Live />} />
         <Route path="budget" element={<SetBudget />} />
         <Route path="vaults" element={<Vaults />} />

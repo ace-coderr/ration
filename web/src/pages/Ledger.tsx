@@ -72,7 +72,7 @@ export function Ledger() {
 
   return (
     <>
-      <PageHead eyebrow="Ledger" title="Everything that happened." lede="Spends, releases, grants and period resets from every chain and the hub, in one list, with a link to each transaction." />
+      <PageHead help="ledger" eyebrow="Ledger" title="Everything that happened." lede="Spends, releases, grants and period resets from every chain and the hub, in one list, with a link to each transaction." />
       <div className="row between wrap" style={{ marginBottom: 18, gap: 14 }}>
         <div className="row wrap" style={{ gap: 8 }}>
           {[{ v: "all", l: "All chains" }, ...LANES.map((l) => ({ v: l.key, l: l.short })), { v: "lasna", l: "Lasna hub" }].map((c) => (

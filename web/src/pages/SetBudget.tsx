@@ -92,7 +92,7 @@ export function SetBudget() {
 
   return (
     <>
-      <PageHead eyebrow="Budget" title="Set the limit once." lede="Pick an amount and a period. Ration splits it across your chains and keeps it balanced as you spend." />
+      <PageHead help="budget" eyebrow="Budget" title="Set the limit once." lede="Pick an amount and a period. Ration splits it across your chains and keeps it balanced as you spend." />
       {isLoading ? (
         <div className="stack"><Skeleton h={120} r={26} /><Skeleton h={200} r={26} /></div>
       ) : !data ? (
