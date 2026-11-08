@@ -84,8 +84,9 @@ docs/           Evidence, audit, architecture notes, demo path
 Requirements: Node 22+, pnpm 9, [Foundry](https://book.getfoundry.sh).
 
 ```bash
-git clone --recurse-submodules https://github.com/ace-coderr/ration
+git clone https://github.com/ace-coderr/ration
 cd ration
+git submodule update --init   # top-level libraries only: forge-std, OpenZeppelin, reactive-lib-omni
 pnpm install
 cp .env.example .env     # then fill in throwaway TESTNET keys only
 ```
