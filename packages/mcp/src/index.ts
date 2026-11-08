@@ -13,7 +13,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import {
-  createPublicClient, createWalletClient, defineChain, fallback, formatUnits, http, parseAbi, parseUnits,
+  createPublicClient, createWalletClient, defineChain, fallback, formatUnits, http, parseAbi, parseEventLogs, parseUnits,
   type Address, type Hex, type PublicClient,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
@@ -181,7 +181,14 @@ server.registerTool("request_spend", {
     const hash = await wallet.writeContract({ address: lane.vault, abi: vaultAbi, functionName: "spend", args: [lane.token, to as Address, units] });
     const rc = await lane.client.waitForTransactionReceipt({ hash, timeout: 90_000 });
     if (rc.status !== "success") { record("request_spend", input, false, "reverted"); return text(`The transaction was mined but failed. Hash ${hash}.`, true); }
-    const left = await lane.client.readContract({ address: lane.vault, abi: vaultAbi, functionName: "slice" });
+    // Report the slice from the Spent event in this transaction's own receipt. A separate slice() read can
+    // hit a lagging RPC node and return the value from before the spend. Read it only if no log is found.
+    const spentLog = parseEventLogs({ abi: vaultAbi, eventName: "Spent", logs: rc.logs }).find(
+      (l) => l.address.toLowerCase() === lane.vault.toLowerCase() && l.args.spender.toLowerCase() === agent.address.toLowerCase(),
+    );
+    const left = spentLog
+      ? spentLog.args.newSlice
+      : await lane.client.readContract({ address: lane.vault, abi: vaultAbi, functionName: "slice" });
     record("request_spend", input, true, `spent ${amount} on ${lane.key}`);
     return text(`Spent ${fmt(units)} ${SYMBOL} on ${lane.name} to ${to}. ${fmt(left)} ${SYMBOL} left on this chain. Transaction ${hash}.`);
   } catch (e: any) {
@@ -196,9 +203,20 @@ server.registerTool("get_ledger", { description: "Recent activity from the vault
     await Promise.all(lanes.map(async (l) => {
       const latest = await l.client.getBlockNumber();
       const from = BigInt(Math.max(l.deployBlock, Number(latest) - 20_000));
-      for (let cur = from; cur <= latest; cur += 2000n) {
-        const to = cur + 1999n > latest ? latest : cur + 1999n;
-        const logs = await l.client.getContractEvents({ address: l.vault, abi: vaultAbi, fromBlock: cur, toBlock: to });
+      // Public RPCs cap the log range (Unichain 1000, Base 200). Start inside the larger cap and halve on refusal.
+      let step = 900n;
+      let cur = from;
+      while (cur <= latest) {
+        const to = cur + step - 1n > latest ? latest : cur + step - 1n;
+        let logs;
+        try {
+          logs = await l.client.getContractEvents({ address: l.vault, abi: vaultAbi, fromBlock: cur, toBlock: to });
+        } catch (e) {
+          if (step <= 100n) throw e;
+          step /= 2n;
+          continue;
+        }
+        cur = to + 1n;
         for (const g of logs as any[]) {
           const a = g.args;
           const ts = Number(a.timestamp);

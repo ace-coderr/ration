@@ -32,7 +32,17 @@ await show("get_remaining");
 const denied = await show("request_spend", { chain: "base", to: "0x000000000000000000000000000000000000dEaD", amount: "99999" });
 if (!denied.isError) throw new Error("expected a denial");
 await show("request_spend", { chain: "nowhere", to: "0x000000000000000000000000000000000000dEaD", amount: "1" });
-if (real) await show("request_spend", { chain: "base", to: "0x000000000000000000000000000000000000dEaD", amount: "5" });
+if (real) {
+  const spend = await show("request_spend", { chain: "base", to: "0x000000000000000000000000000000000000dEaD", amount: "5" });
+  // The "left" number comes from the Spent event in the receipt. A few seconds later, an independent read
+  // (get_remaining) must agree with it.
+  const reported = spend.content[0].text.match(/(\d{1,3}(?:,\d{3})*(?:\.\d+)?) mUSDC left on this chain/)?.[1];
+  await new Promise((r) => setTimeout(r, 6000));
+  const after = await show("get_remaining");
+  const seen = after.content[0].text.match(/Base Sepolia: .*?\(slice (\d{1,3}(?:,\d{3})*(?:\.\d+)?)/)?.[1];
+  console.log(`\nreported by request_spend: ${reported}   read by get_remaining 6s later: ${seen}   ${reported === seen ? "MATCH" : "MISMATCH"}`);
+  if (!reported || reported !== seen) throw new Error("request_spend's 'left' does not match get_remaining");
+}
 await show("get_ledger", { limit: 5 });
 
 const log = await (await fetch("http://127.0.0.1:7399/calls")).json();
