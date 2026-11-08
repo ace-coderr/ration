@@ -1,10 +1,10 @@
 # Demo path (under 3 minutes)
 
-The video shows the real, live product with a wallet connected and its address visible. Nothing is mocked.
+This is the script for whoever produces the video. It shows the real, live product with a wallet connected and its address visible. Nothing is mocked.
 
 ## Before recording (2 minutes, once)
 
-1. **Reset the demo:** `pnpm seed`. It starts a fresh period, so both lanes begin at 500 and nothing is spent. It takes about 5 seconds and prints the fuel levels. If it prints `LOW` or `IN DEBT`, top up on the Fuel page first.
+1. **Reset the demo:** `pnpm seed`. It starts a fresh period, so both lanes begin at 500 and nothing is spent. It first stops spending on every chain, then issues fresh slices, then waits for the ten-second safety delay, so it takes about 25 seconds and prints the fuel levels. If it prints `LOW` or `IN DEBT`, top up on the Fuel page first.
 2. **Wallet:** import the owner testnet key from `.env` (`DEPLOYER_PRIVATE_KEY`) into a browser wallet. This key is the owner and also an approved spender, so one wallet can show everything. It is a throwaway key for testnets only. It needs a little ETH on Base Sepolia (about 0.001 per spend) and on Unichain Sepolia.
 3. **Networks:** open the app, go to `/connect`, click **Add the three networks to my wallet**, approve the prompts.
 4. **Browser:** a clean window, dark or light, 1440 px wide, address bar showing the app URL. Open `/` first.
@@ -33,7 +33,7 @@ Check: `/live` shows 500 and 500, "Within budget" stamp, nothing in flight.
 | Wallet confirm to spend mined on Base/Unichain | 2 to 5 s |
 | Spend to grant landed (on-chain) | 3 to 4 s (measured in 3 loops) |
 | Spend to blocks moving on screen | 5 to 8 s (the page reads events every 4 s, and animates one step per 1.15 s so the in-flight state is visible) |
-| `pnpm seed` | about 5 s |
+| `pnpm seed` | about 25 s (close, new slices, then a 10 s safety delay) |
 
 ## If something goes wrong on camera
 

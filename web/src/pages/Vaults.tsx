@@ -5,9 +5,9 @@ import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Address } from "viem";
 import { Addr, ChainBadge, Footnote, PageHead, Rise, Seg, Skeleton, Stagger, StateCard, Ticker } from "@/components/kit";
-import { erc20Abi, vaultAbi } from "@/lib/abi";
+import { erc20Abi, hubAbi, vaultAbi } from "@/lib/abi";
 import { clientFor } from "@/lib/chains";
-import { SYMBOL } from "@/lib/config";
+import { HUB, SYMBOL } from "@/lib/config";
 import { fmtAmt, num, toUnits } from "@/lib/format";
 import { useSnapshot, type LaneSnap } from "@/state/data";
 import { useWallet } from "@/state/wallet";
@@ -141,6 +141,41 @@ function VaultCard({ s }: { s: LaneSnap }) {
   );
 }
 
+function ResendNotice() {
+  const w = useWallet();
+  const qc = useQueryClient();
+  const { data } = useSnapshot();
+  const [busy, setBusy] = useState(false);
+  if (!data || data.hub.closing || data.hub.epochId === 0n) return null;
+  const behind = data.lanes.filter((l) => l.epochId < data.hub.epochId);
+  if (!behind.length) return null;
+  const owner = w.isOwner(data.hub.owner);
+  return (
+    <StateCard
+      tone="warn"
+      title="A chain has not joined the new period"
+      action={
+        owner ? (
+          <button
+            className="btn auto"
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              await w.write({ chain: "lasna", address: HUB, abi: hubAbi, functionName: "reissueEpoch", title: "New period re-sent to the chains that missed it" });
+              setBusy(false);
+              qc.invalidateQueries({ queryKey: ["snapshot"] });
+            }}
+          >
+            {busy ? "Waiting for your wallet…" : "Re-send the new period now"}
+          </button>
+        ) : undefined
+      }
+    >
+      {behind.map((l) => l.cfg.name).join(", ")} still shows the old period, so it can't be spent there yet. The hub re-sends on its own every few minutes. {owner ? "You can also do it now." : "The owner can re-send it now."}
+    </StateCard>
+  );
+}
+
 export function Vaults() {
   const { data, isLoading, isError, refetch } = useSnapshot();
   return (
@@ -149,7 +184,9 @@ export function Vaults() {
       {isLoading ? <div className="stack"><Skeleton h={300} r={26} /><Skeleton h={300} r={26} /></div>
         : isError && !data ? <StateCard tone="bad" title="Can't read the vaults" action={<button className="btn auto" onClick={() => refetch()}>Try again</button>}>The chains did not answer.</StateCard>
         : (
-          <Stagger>{data!.lanes.map((s) => <Rise key={s.cfg.key}><VaultCard s={s} /></Rise>)}</Stagger>
+          <Stagger>
+            <Rise><ResendNotice /></Rise>
+            {data!.lanes.map((s) => <Rise key={s.cfg.key}><VaultCard s={s} /></Rise>)}</Stagger>
         )}
       <Footnote>Funds never cross chains. If one chain needs more real tokens, you fund that vault yourself. Ration only moves how much of the limit each chain may spend.</Footnote>
     </>

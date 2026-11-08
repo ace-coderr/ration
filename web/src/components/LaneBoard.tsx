@@ -60,6 +60,7 @@ function apply(v: Virt, e: Ev): Virt {
   if (e.kind === "spent") { n.slice[k] = (n.slice[k] ?? 0n) - e.args.amount; n.spent[k] = (n.spent[k] ?? 0n) + e.args.amount; }
   else if (e.kind === "released") { n.slice[k] = (n.slice[k] ?? 0n) - e.args.actual; n.transit += e.args.actual; }
   else if (e.kind === "granted") { n.slice[k] = (n.slice[k] ?? 0n) + e.args.amount; n.transit = n.transit > e.args.amount ? n.transit - e.args.amount : 0n; }
+  else if (e.kind === "closed") { n.transit += n.slice[k] ?? 0n; n.slice[k] = 0n; }
   else if (e.kind === "reset") { n.slice[k] = e.args.slice; n.spent[k] = 0n; n.transit = 0n; n.budget = e.args.budget > n.budget ? e.args.budget : n.budget; }
   return n;
 }
@@ -84,7 +85,7 @@ export function LaneBoard({ compact = false, onStep }: { compact?: boolean; onSt
     () =>
       onNewEvents((fresh) => {
         const cutoff = Date.now() / 1000 - 20;
-        const mine = fresh.filter((e) => ["spent", "released", "granted", "reset"].includes(e.kind) && e.ts >= cutoff);
+        const mine = fresh.filter((e) => ["spent", "released", "granted", "reset", "closed"].includes(e.kind) && e.ts >= cutoff);
         queue.current.push(...mine);
         queue.current.sort((a, b) => a.ts - b.ts || Number(a.block - b.block));
       }),

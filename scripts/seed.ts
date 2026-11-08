@@ -37,6 +37,15 @@ for (const l of lanes) {
     if (Date.now() - t0 > 180_000) throw new Error(`${l.name} did not receive the new period in 3 minutes`);
     await sleep(3000);
   }
+  // new slices open a few seconds after the hub decides (safety delay): wait until they are spendable
+  for (;;) {
+    const [start, blk] = await Promise.all([
+      retry(() => c.readContract({ address: l.vault, abi: vaultAbi, functionName: "epochStart" })),
+      retry(() => c.getBlock()),
+    ]);
+    if (blk.timestamp >= start) break;
+    await sleep(2000);
+  }
   const [slice, spent] = await Promise.all([
     retry(() => c.readContract({ address: l.vault, abi: vaultAbi, functionName: "slice" })),
     retry(() => c.readContract({ address: l.vault, abi: vaultAbi, functionName: "spentInEpoch" })),

@@ -12,14 +12,19 @@ exceed the budget".
 
 | # | Area | Severity | Status |
 |---|---|---|---|
-| 1 | Forced early period start briefly allows two live slices | Medium | Documented, UI warns |
-| 2 | Hub cron tick reverts if lane weights are not 100% | Medium | Documented, UI prevents |
+| 1 | Forced early period start briefly allowed two live slices | Medium | **Fixed** (two-step close, start gate) |
+| 2 | Hub cron tick reverted if lane weights were not 100% | Medium | **Fixed** |
 | 3 | A stuck grant after a late release is not retried | Low | Documented |
 | 4 | Duplicate `grant` re-emits the caller's amount | Low | Documented |
 | 5 | Debt on a vault strands in-flight allowance until the period ends | Low | Documented, Fuel page warns |
-| 6 | Clock skew between chains at period boundaries | Info | Documented |
+| 6 | Clock skew between chains at period boundaries | Info | Mitigated by start delay and vault clamp |
 | 7 | Owner key loss | Info | Documented honestly below |
 | 8 | Reentrancy test did not assert the guard | Info | Fixed in tests |
+| 9 | A lost period reset left a vault idle for the whole period; first reset ran out of gas | High (found on redeploy) | **Fixed** (re-send logic, 600k gas, regression guard) |
+
+The first version of the contracts was deployed, reviewed, and then **replaced**: findings 1, 2 and 9 changed contract code, so
+the contracts were redeployed and the loop proof re-run. The addresses in this repository are the fixed ones. Findings 3 to 5 are
+under-use only (never overspend) and stay documented.
 
 ## What was checked and how
 
@@ -72,21 +77,30 @@ TODO/FIXME, no tool or assistant traces, one author identity (the noreply addres
 
 ## Findings
 
-### 1. Forced early period start briefly allows two live slices (Medium)
-`startEpoch()` is owner-only and begins a new period immediately. Vaults receive their new slice by callback a few seconds
-later, and a vault that has not yet received it still holds an unexpired slice from the old period. During that window the old
-slices and the new ones can both be spent, so up to roughly one extra budget could be spent in a few seconds.
-The normal path (`rollEpoch` / cron) only runs after the period ended, when every old slice has already expired, and the
-fuzz test proves two live periods never coexist there.
-*Status:* not patched, because the deployed contracts must match this source. Mitigations: owner-only; the Set Budget page says
-starting now "ends the current period early"; use it only when idle. *Fix next deployment:* have the vault reject callbacks
-for a new period until the old period's `epochEnd`, or make early start set `epochStart` in the future.
+### 1. Forced early period start briefly allowed two live slices (Medium, fixed)
+In the first version `startEpoch()` began a new period at once. Vaults received new slices by callback a few seconds later, and a
+vault that had not yet been told still held an unexpired old slice, so old and new slices could be spent together.
+*Fix:* a forced start is now two steps. The hub tells every vault to **close** the current period (spending stops on that chain
+immediately) and issues new slices only after every active vault has confirmed. If a confirmation is lost the hub waits for the old
+period's natural end, which fails safe. Each new slice also has a start time ten seconds after the hub's decision, and the vault
+clamps that start to the end of its own old lease, so even clock skew cannot make the two overlap. The invariant fuzz now includes a
+random owner force-start and checks that two vaults are never spendable in different periods at once. Putting the old behaviour
+back makes that test fail ("two periods spendable at once"), so the test would have caught the bug.
+*Residual:* a vault in debt cannot receive the close, so a forced start then waits until the period ends naturally.
 
-### 2. Hub cron tick reverts if lane weights are not 100% (Medium)
-If the owner removes a vault or edits a weight and leaves the weights not summing to 100%, the next cron-triggered rollover
-reverts with `BadWeights`. Each tick is billed, so the hub would burn fuel every tick until fixed, and no new period starts.
-Budget safety is unaffected (old slices expire). *Status:* the Set Budget page enforces 100%; documented.
-*Fix next deployment:* validate weights in `_tick` and skip silently when invalid.
+### 2. Hub cron tick reverted if lane weights were not 100% (Medium, fixed)
+A rollover tick with invalid weights reverted and was billed on every tick. The tick now checks weights first and skips
+silently. A forced start that was held back because weights changed mid-way is finished by the next tick once they are fixed.
+
+### 9. A lost period reset left a vault idle for the whole period (High, found on redeploy, fixed)
+While redeploying, the first period's reset callbacks never took effect. Measured cause: the first reset on a fresh vault needs
+about 164,000 gas, and the hub asked for 300,000, of which the callback proxy keeps about 136,000. The reset ran out of gas.
+That failure also exposed a design gap: **a failed reset could not be re-sent**, and a forced restart cannot help a vault that never
+joined the period it would close, so that vault would stay idle until the period ended. The affected deployment was abandoned.
+*Fix:* the callback gas default is 600,000; the hub now records which vaults confirmed the current period and the cron tick re-sends
+the reset to any that did not (up to five times, one round per timeout); the owner can call `reissueEpoch()` to do it at once;
+the vault ignores a period it already joined, so repeats are safe. Two tests guard the margin by measuring real callback gas
+against the configured limit; with the old 300,000 limit the first-reset test fails.
 
 ### 3. A stuck grant after a late release is not retried (Low)
 If a release lands after its transfer expired, the hub still grants it. If the recipient lane already started a new inbound
@@ -104,9 +118,10 @@ grant to it fails after the donor already gave up allowance; the hub retries up 
 until the period ends. Never overspend. The Fuel page shows reserves and runway, warns before debt, and a top-up pays debt first.
 Recovery: top up through `depositTo`; retries stop after 5, so top up before that.
 
-### 6. Clock skew between chains (Info)
-Periods are timestamps on the hub; vaults enforce `epochEnd` with their own chain's time. Chains differ by about a second.
-This can shift when a vault stops or starts spending by about that much. Block numbers are never used.
+### 6. Clock skew between chains (Info, mitigated)
+Periods are timestamps on the hub; vaults enforce them with their own chain's time, and chains differ by about a second. New
+slices open ten seconds after the hub's decision and never before the vault's own old lease ends, so skew of up to that size cannot cause an
+overlap. Block numbers are never used.
 
 ### 7. Owner key loss (Info)
 Each vault and the hub have a single owner key. If it is lost: tokens held in vaults cannot be withdrawn and settings cannot

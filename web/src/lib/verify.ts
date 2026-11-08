@@ -14,7 +14,7 @@ export interface ReplayResult {
   violation?: string;
 }
 
-const RANK: Record<string, number> = { reset: 0, spent: 1, released: 2, granted: 3 };
+const RANK: Record<string, number> = { reset: 0, spent: 1, released: 2, granted: 3, closed: 4 };
 
 /**
  * Re-plays every vault event in order and checks, after each one, that
@@ -23,7 +23,7 @@ const RANK: Record<string, number> = { reset: 0, spent: 1, released: 2, granted:
  * one-second timestamps disagree.
  */
 export function replay(events: Ev[]): ReplayResult {
-  const vaultEvs = events.filter((e) => ["reset", "spent", "released", "granted"].includes(e.kind));
+  const vaultEvs = events.filter((e) => ["reset", "spent", "released", "granted", "closed"].includes(e.kind));
   const releasedTs = new Map<string, number>();
   for (const e of vaultEvs) if (e.kind === "released") releasedTs.set(e.args.transferId, e.ts);
   const eff = (e: Ev) => (e.kind === "granted" ? Math.max(e.ts, releasedTs.get(e.args.transferId) ?? 0) : e.ts);
@@ -50,6 +50,8 @@ export function replay(events: Ev[]): ReplayResult {
     if (e.kind === "reset") {
       s.slice[k] = e.args.slice; s.spent[k] = 0n;
       if (e.args.budget > s.budget) s.budget = e.args.budget;
+    } else if (e.kind === "closed") {
+      s.slice[k] = 0n; // the period was closed early: nothing here can be spent any more
     } else if (e.kind === "spent") {
       s.slice[k] -= e.args.amount; s.spent[k] += e.args.amount;
     } else if (e.kind === "released") {

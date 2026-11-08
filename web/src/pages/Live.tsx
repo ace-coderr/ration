@@ -138,6 +138,36 @@ function Transfers() {
   );
 }
 
+function PeriodNotice() {
+  const { data } = useSnapshot();
+  if (!data) return null;
+  if (data.hub.closing) {
+    return (
+      <StateCard tone="warn" title="Starting a new period">
+        Spending is stopping on every chain first. New slices are handed out only after each chain confirms it has stopped, so an old and a new slice are never spendable together. This takes a few seconds.
+      </StateCard>
+    );
+  }
+  const waiting = data.lanes.filter((l) => l.epochStart > 0n && BigInt(l.chainTime) < l.epochStart);
+  if (waiting.length) {
+    const secs = Math.max(...waiting.map((l) => Number(l.epochStart) - l.chainTime));
+    return (
+      <StateCard title={`New period opens in about ${secs} seconds`}>
+        Slices are issued. Spending opens after a short safety delay, so chains with slightly different clocks can't overlap.
+      </StateCard>
+    );
+  }
+  const behind = data.lanes.filter((l) => l.epochId < data.hub.epochId);
+  if (behind.length && data.hub.epochId > 0n) {
+    return (
+      <StateCard tone="warn" title="Waiting for a chain to join the new period" action={<Link className="btn auto" to="/vaults">Open Vaults</Link>}>
+        {behind.map((l) => l.cfg.name).join(", ")} has not confirmed the new period yet. The hub re-sends it on its own; the owner can also re-send it now.
+      </StateCard>
+    );
+  }
+  return null;
+}
+
 export function Live() {
   const m = useBudgetMath();
   const snap = useSnapshot();
@@ -154,6 +184,7 @@ export function Live() {
         <StateCard title="No period is running" action={<Link className="btn auto" to="/budget">Set the budget</Link>}>The owner has not started a budget period yet.</StateCard>
       ) : (
         <Stagger>
+          <Rise><PeriodNotice /></Rise>
           <Rise>
             <div className="card grid two" style={{ alignItems: "center" }}>
               <div style={{ display: "grid", placeItems: "center" }}>

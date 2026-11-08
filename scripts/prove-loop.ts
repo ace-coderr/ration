@@ -232,6 +232,20 @@ async function main() {
   const hubEpoch = await retry(() => lasnaClient.readContract({ address: hub, abi: hubAbi, functionName: "epochId" }));
   if (hubEpoch === 0n) throw new Error("Hub has no running epoch. Run startEpoch first.");
 
+  // wait for the current period's slices to open (a few seconds after the hub issues them)
+  for (const l of lanes) {
+    const c = clientOf.get(l)!;
+    for (;;) {
+      const [start, blk] = await Promise.all([
+        retry(() => c.readContract({ address: l.vault, abi: vaultAbi, functionName: "epochStart" })),
+        retry(() => c.getBlock()),
+      ]);
+      if (blk.timestamp >= start) break;
+      console.log(`waiting for ${l.name} slice to open…`);
+      await sleep(3000);
+    }
+  }
+
   const loops: LoopResult[] = [];
   loops.push(await runLoop(0)); // Base spends, Unichain donates
   writeEvidence(loops, await slices());

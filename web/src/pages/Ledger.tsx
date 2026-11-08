@@ -8,7 +8,7 @@ import { useEvents, type Ev, type TransferView } from "@/state/data";
 
 type Group = "all" | "spend" | "move" | "period";
 const GROUP: Record<string, Group> = {
-  spent: "spend", released: "move", granted: "move", requested: "move", hubReleased: "move", granting: "move", done: "move", expired: "move", reset: "period", epochStarted: "period",
+  spent: "spend", closed: "period", epochClosing: "period", reissued: "period", released: "move", granted: "move", requested: "move", hubReleased: "move", granting: "move", done: "move", expired: "move", reset: "period", epochStarted: "period",
 };
 
 function describe(e: Ev): { text: string; amount?: bigint } {
@@ -18,6 +18,9 @@ function describe(e: Ev): { text: string; amount?: bigint } {
     case "spent": return { text: `Spent on ${n}, paid to ${short(e.args.to)} by ${short(e.args.spender)}`, amount: e.args.amount };
     case "released": return { text: `${n} gave up allowance`, amount: e.args.actual };
     case "granted": return { text: `${n} took on allowance`, amount: e.args.amount };
+    case "closed": return { text: `${n} closed the period early, spending stopped here` };
+    case "epochClosing": return { text: `Hub is closing period ${e.args.epochId} on every chain before starting a new one` };
+    case "reissued": return { text: `Hub re-sent the new period to ${laneByChain(Number(e.args.chainId))?.short} (try ${e.args.attempt})` };
     case "reset": return { text: `New period on ${n}: starts with ${fmtAmt(e.args.slice)} ${SYMBOL}`, amount: e.args.slice };
     case "requested": return { text: `Hub asked ${laneByChain(Number(e.args.fromChain))?.short} to give ${laneByChain(Number(e.args.toChain))?.short} more`, amount: e.args.amount };
     case "hubReleased": return { text: `Hub saw the release go through`, amount: e.args.actual };

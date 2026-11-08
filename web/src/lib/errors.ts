@@ -25,6 +25,12 @@ export function explain(err: unknown, ctx?: { lane?: string }): string {
           return `Spending is paused${where}. The owner can resume it.`;
         case "EpochExpired":
           return `This period's slice has expired${where}. Spending resumes when the next period starts.`;
+        case "EpochNotStarted":
+          return `The new period has not started${where}. Spending opens in a few seconds.`;
+        case "AlreadyClosing":
+          return "A new period is already being started. Wait for it to finish.";
+        case "NothingToStart":
+          return "There is nothing to re-send right now.";
         case "ZeroAmount":
           return "Enter an amount above zero.";
         case "ZeroAddress":

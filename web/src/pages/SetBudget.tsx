@@ -175,7 +175,7 @@ export function SetBudget() {
               <div className="row wrap" style={{ gap: 12 }}>
                 <Seg label="When to apply" value={when} onChange={setWhen} options={[{ v: "next", label: "From next period" }, { v: "now", label: "Start a new period now" }]} />
               </div>
-              {when === "now" && <p className="helper" style={{ color: "#98a59d" }}>Starting now ends the current period early. Anything spent so far stops counting.</p>}
+              {when === "now" && <p className="helper" style={{ color: "#98a59d" }}>Starting now stops spending on every chain first, then issues fresh slices once each chain confirms. It takes a few seconds, and nothing from the old period carries over.</p>}
               <button className="btn primary" disabled={!isOwner || !valid || busy} onClick={apply}>{busy ? "Saving…" : "Save budget"}</button>
               {steps.length > 0 && (
                 <ol style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 8 }}>

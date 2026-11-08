@@ -13,6 +13,7 @@ export interface LaneSnap {
   slice: bigint;
   spent: bigint;
   epochId: bigint;
+  epochStart: bigint;
   epochEnd: bigint;
   epochBudget: bigint;
   paused: boolean;
@@ -35,6 +36,8 @@ export interface HubLane {
   slice: bigint;
   pendingOut: bigint;
   inbound: Hex;
+  closed: boolean;
+  resetConfirmed: boolean;
 }
 
 export interface HubSnap {
@@ -51,6 +54,8 @@ export interface HubSnap {
   epochStart: bigint;
   epochEnd: bigint;
   epochBudget: bigint;
+  closing: boolean;
+  startDelay: bigint;
   lanes: HubLane[];
   reserve: bigint;
   debt: bigint;
@@ -67,11 +72,12 @@ export interface Snapshot {
 async function fetchLane(cfg: LaneCfg): Promise<LaneSnap> {
   const c = clientFor(cfg.key);
   const v = { address: cfg.vault, abi: vaultAbi } as const;
-  const [slice, spent, epochId, epochEnd, epochBudget, paused, restrict, owner, tokenBalance, tokenAllowed, reserve, debt, native, block] =
+  const [slice, spent, epochId, epochStart, epochEnd, epochBudget, paused, restrict, owner, tokenBalance, tokenAllowed, reserve, debt, native, block] =
     await Promise.all([
       c.readContract({ ...v, functionName: "slice" }),
       c.readContract({ ...v, functionName: "spentInEpoch" }),
       c.readContract({ ...v, functionName: "epochId" }),
+      c.readContract({ ...v, functionName: "epochStart" }),
       c.readContract({ ...v, functionName: "epochEnd" }),
       c.readContract({ ...v, functionName: "epochBudget" }),
       c.readContract({ ...v, functionName: "paused" }),
@@ -85,7 +91,7 @@ async function fetchLane(cfg: LaneCfg): Promise<LaneSnap> {
       c.getBlock({ blockTag: "latest" }),
     ]);
   return {
-    cfg, ok: true, slice, spent, epochId, epochEnd, epochBudget, paused, restrict, owner, tokenBalance, tokenAllowed,
+    cfg, ok: true, slice, spent, epochId, epochStart, epochEnd, epochBudget, paused, restrict, owner, tokenBalance, tokenAllowed,
     reserve, debt, native, chainTime: Number(block.timestamp),
   };
 }
@@ -93,7 +99,7 @@ async function fetchLane(cfg: LaneCfg): Promise<LaneSnap> {
 async function fetchHub(): Promise<HubSnap> {
   const c = clientFor("lasna");
   const h = { address: HUB, abi: hubAbi } as const;
-  const [owner, cronInterval, budget, epochLength, refillBps, timeout, minTransfer, callbackGas, epochId, epochStart, epochEnd, epochBudget, laneCount, reserve, debt, native, block] =
+  const [owner, cronInterval, budget, epochLength, refillBps, timeout, minTransfer, callbackGas, epochId, epochStart, epochEnd, epochBudget, laneCount, closing, startDelay, reserve, debt, native, block] =
     await Promise.all([
       c.readContract({ ...h, functionName: "OWNER" }),
       c.readContract({ ...h, functionName: "CRON_INTERVAL" }),
@@ -108,6 +114,8 @@ async function fetchHub(): Promise<HubSnap> {
       c.readContract({ ...h, functionName: "epochEnd" }),
       c.readContract({ ...h, functionName: "epochBudget" }),
       c.readContract({ ...h, functionName: "laneCount" }),
+      c.readContract({ ...h, functionName: "closing" }),
+      c.readContract({ ...h, functionName: "startDelay" }),
       c.readContract({ address: SYSTEM, abi: payableAbi, functionName: "reserves", args: [HUB] }),
       c.readContract({ address: SYSTEM, abi: payableAbi, functionName: "debts", args: [HUB] }),
       c.getBalance({ address: HUB }),
@@ -118,12 +126,12 @@ async function fetchHub(): Promise<HubSnap> {
     const l = await c.readContract({ ...h, functionName: "laneAt", args: [i] });
     lanes.push({
       chainId: Number(l.chainId), vault: l.vault, weightBps: l.weightBps, lowBps: l.lowBps, active: l.active,
-      slice: l.slice, pendingOut: l.pendingOut, inbound: l.inbound,
+      slice: l.slice, pendingOut: l.pendingOut, inbound: l.inbound, closed: l.closed, resetConfirmed: l.resetConfirmed,
     });
   }
   return {
     ok: true, owner, cronInterval, budget, epochLength, refillBps, timeout, minTransfer, callbackGas, epochId, epochStart,
-    epochEnd, epochBudget, lanes, reserve, debt, native, chainTime: Number(block.timestamp),
+    epochEnd, epochBudget, closing, startDelay, lanes, reserve, debt, native, chainTime: Number(block.timestamp),
   };
 }
 
@@ -159,7 +167,7 @@ export function useStale(): boolean {
 
 export type EvKind =
   | "spent" | "released" | "granted" | "reset"
-  | "spenderSet" | "requested" | "hubReleased" | "granting" | "done" | "expired" | "epochStarted";
+  | "closed" | "epochClosing" | "reissued" | "spenderSet" | "requested" | "hubReleased" | "granting" | "done" | "expired" | "epochStarted";
 
 export interface Ev {
   id: string;
@@ -218,10 +226,11 @@ async function hubTs(block: bigint): Promise<number> {
   return t;
 }
 
-const VAULT_KINDS: Record<string, EvKind> = { Spent: "spent", Released: "released", Granted: "granted", EpochReset: "reset", SpenderSet: "spenderSet" };
+const VAULT_KINDS: Record<string, EvKind> = { Spent: "spent", Released: "released", Granted: "granted", EpochReset: "reset", EpochClosed: "closed", SpenderSet: "spenderSet" };
 const HUB_KINDS: Record<string, EvKind> = {
   TransferRequested: "requested", TransferReleased: "hubReleased", TransferGranting: "granting",
   TransferDone: "done", TransferExpired: "expired", EpochStarted: "epochStarted",
+  EpochClosing: "epochClosing", ResetReissued: "reissued",
 };
 
 export async function refreshEvents(): Promise<Ev[]> {

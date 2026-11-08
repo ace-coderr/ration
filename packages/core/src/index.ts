@@ -7,6 +7,7 @@ const abi = parseAbi([
   "function restrictRecipients() view returns (bool)",
   "function recipientAllowed(address) view returns (bool)",
   "function epochId() view returns (uint256)",
+  "function epochStart() view returns (uint256)",
   "function epochEnd() view returns (uint256)",
   "function slice() view returns (uint256)",
   "function spentBy(uint256 epoch, address spender) view returns (uint256)",
@@ -32,7 +33,7 @@ export interface SpendVerdict {
   /** Stable machine-readable code. */
   code:
     | "ok" | "paused" | "not_spender" | "token_not_allowed" | "zero_amount" | "recipient_not_allowed"
-    | "epoch_expired" | "exceeds_slice" | "exceeds_cap" | "vault_underfunded";
+    | "epoch_expired" | "epoch_not_started" | "exceeds_slice" | "exceeds_cap" | "vault_underfunded";
   /** One plain sentence a person (or an agent) can act on. */
   reason: string;
   slice?: bigint;
@@ -49,13 +50,14 @@ export async function checkSpend(p: SpendCheck): Promise<SpendVerdict> {
   const f = (v: bigint) => Number(formatUnits(v, dec)).toLocaleString("en-US", { maximumFractionDigits: 2 });
   const c = p.client;
   const v = { address: p.vault, abi } as const;
-  const [paused, info, tokenOk, restrict, recipOk, epochId, epochEnd, slice, balance, block] = await Promise.all([
+  const [paused, info, tokenOk, restrict, recipOk, epochId, epochStart, epochEnd, slice, balance, block] = await Promise.all([
     c.readContract({ ...v, functionName: "paused" }),
     c.readContract({ ...v, functionName: "spenders", args: [p.spender] }),
     c.readContract({ ...v, functionName: "tokenAllowed", args: [p.token] }),
     c.readContract({ ...v, functionName: "restrictRecipients" }),
     c.readContract({ ...v, functionName: "recipientAllowed", args: [p.to] }),
     c.readContract({ ...v, functionName: "epochId" }),
+    c.readContract({ ...v, functionName: "epochStart" }),
     c.readContract({ ...v, functionName: "epochEnd" }),
     c.readContract({ ...v, functionName: "slice" }),
     c.readContract({ address: p.token, abi: erc20, functionName: "balanceOf", args: [p.vault] }),
@@ -69,6 +71,7 @@ export async function checkSpend(p: SpendCheck): Promise<SpendVerdict> {
   if (p.amount === 0n) return { ok: false, code: "zero_amount", reason: "The amount must be above zero.", slice };
   if (restrict && !recipOk) return { ok: false, code: "recipient_not_allowed", reason: `${p.laneName} only pays recipients on its allowed list, and this one is not on it.`, slice };
   if (block.timestamp >= epochEnd) return { ok: false, code: "epoch_expired", reason: `The slice on ${p.laneName} has expired. Spending resumes when the next period starts.`, slice };
+  if (block.timestamp < epochStart) return { ok: false, code: "epoch_not_started", reason: `The new period on ${p.laneName} has not started yet. Spending opens in about ${Number(epochStart - block.timestamp)} seconds.`, slice };
   if (p.amount > slice) return { ok: false, code: "exceeds_slice", reason: `Exceeds slice on ${p.laneName}: ${f(p.amount)} requested, ${f(slice)} ${sym} available here${totalNote}.`, slice };
   if (info[1] > 0n) {
     const used = await c.readContract({ ...v, functionName: "spentBy", args: [epochId, p.spender] });

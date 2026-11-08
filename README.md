@@ -60,7 +60,7 @@ Measured on the live testnets: spend to grant landed in **3 to 4 seconds**. See 
 
 - **Funds do not cross chains.** You fund each vault yourself. Ration decides how much of the limit each chain may spend.
 - **The owner is a single key.** Lose it and vault funds are locked; there is no recovery. Use a multisig for anything real. See the audit.
-- **Starting a period early** can briefly allow old and new slices at once (owner-only, a few seconds). Normal period rollover cannot.
+- **Starting a period early** takes a few seconds: every chain must confirm it has stopped spending before new slices are issued, and new slices open ten seconds later. If a chain cannot confirm (for example it is out of fuel), the early start waits for the old period to end.
 - **Fuel is needed on every chain.** The hub needs lREACT and each vault needs a little native token for callbacks. If one runs out, it pauses until topped up; the budget stays safe.
 - **Testnet and a mock token.** Not audited by a third party. Do not use with real value.
 
@@ -95,7 +95,7 @@ cp .env.example .env     # then fill in throwaway TESTNET keys only
 forge test
 ```
 
-85 tests, including the invariant fuzz (256 runs of 80 calls).
+112 tests, including the invariant fuzz (256 runs of 80 calls) with random early period starts.
 
 ### Deploy your own copy (optional, the repo already points at a live deployment)
 
@@ -103,8 +103,8 @@ Use throwaway keys. Fund the deployer with Base Sepolia ETH, Unichain Sepolia ET
 (call `request(address)` with ETH on the [faucet](https://dev.reactive.network/reactive-mainnet)).
 
 ```bash
-# 1. Hub on Lasna (Cron1000 = a tick about every 17 minutes)
-forge create src/RationHub.sol:RationHub --rpc-url $LASNA_RPC --private-key $DEPLOYER_PRIVATE_KEY --broadcast --constructor-args 1000
+# 1. Hub on Lasna (Cron10000 = a housekeeping tick about every 3 hours; 1000 is about every 17 minutes and costs ten times more)
+forge create src/RationHub.sol:RationHub --rpc-url $LASNA_RPC --private-key $DEPLOYER_PRIVATE_KEY --broadcast --constructor-args 10000
 export HUB_ADDRESS=0x...   # printed above; also put it in .env
 
 # 2. Token and vault on each destination chain (callback proxies are in docs/ARCHITECTURE.md)
@@ -162,21 +162,25 @@ Tools: `get_budget`, `get_slices`, `get_remaining`, `request_spend`, `get_ledger
 sentence, for example: *Exceeds slice on Base Sepolia: 99,999 requested, 325 mUSDC available here; remaining total 525 mUSDC.*
 The server also serves its recent calls at `http://127.0.0.1:7373/calls` for the Agents page.
 
-## Deploy the web app (Cloudflare Pages, dashboard only)
+## Deploy the web app (Cloudflare Workers, static assets)
+
+The repository includes `wrangler.jsonc`: assets directory `web/dist` with single-page-app fallback, so `/live` and `/proof` load
+directly instead of returning 404. Everything is done in the dashboard:
 
 1. Push this repository to GitHub (public).
-2. Open the [Cloudflare dashboard](https://dash.cloudflare.com), go to **Workers & Pages**.
-3. Click **Create**, then the **Pages** tab, then **Connect to Git**. Authorize GitHub and pick the repository.
-4. Set up the build:
-   - **Project name:** `ration` (the site becomes `ration.pages.dev`)
+2. Open the [Cloudflare dashboard](https://dash.cloudflare.com) and go to **Workers & Pages**.
+3. Click **Create application**, then **Import a repository** (the Workers flow, not the Pages tab). Authorize GitHub and pick the repository.
+4. On the setup screen:
+   - **Project name:** `ration` (it must match `name` in `wrangler.jsonc`)
    - **Production branch:** `main`
-   - **Framework preset:** None
+   - **Root directory:** leave empty
    - **Build command:** `pnpm install --frozen-lockfile && pnpm --filter ration-web build`
-   - **Build output directory:** `web/dist`
-   - **Root directory:** leave empty (the app reads `deployments/` and `docs/` from the repo root)
-5. Open **Environment variables (advanced)** and add `NODE_VERSION` = `22`.
-6. Click **Save and Deploy**. When it finishes, open the `*.pages.dev` link and check `/live` and `/proof` load directly (the `_redirects` file makes deep links work).
-7. Put that URL at the top of this README.
+   - **Deploy command:** `npx wrangler deploy`
+5. Under **Variables and secrets** (build), add `NODE_VERSION` = `22`.
+6. Click **Save and Deploy**. When the build finishes, open the `ration.<your-subdomain>.workers.dev` link.
+7. Paste `/live` and `/proof` straight into new tabs to confirm deep links work. Put the URL at the top of this README.
+
+Later pushes to `main` redeploy automatically.
 
 ## Built with
 

@@ -32,6 +32,7 @@ export const vaultAbi = parseAbi([
   "function slice() view returns (uint256)",
   "function spentInEpoch() view returns (uint256)",
   "function epochId() view returns (uint256)",
+  "function epochStart() view returns (uint256)",
   "function epochEnd() view returns (uint256)",
   "function epochBudget() view returns (uint256)",
   "function paused() view returns (bool)",
