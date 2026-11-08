@@ -1938,3 +1938,56 @@ details.faq[open] .faq-plus {
     transform: none;
   }
 }
+
+/* ------------------------------------------------------------------ explainer readability */
+.hw p,
+.hw li,
+.hw dd,
+.hw .lede,
+.hw .muted,
+.hw .helper:not(.mono),
+.hw .faq-a,
+.hw .walk-body,
+.hw details.faq p {
+  font-size: 17px;
+  line-height: 1.68;
+  color: var(--ink);
+}
+.hw .hw-prose p {
+  font-size: 19px;
+  line-height: 1.68;
+}
+.hw .lede {
+  font-size: 19px;
+  max-width: 64ch;
+}
+.hw .hw-step .muted,
+.hw .hw-role p.muted {
+  font-size: 16px;
+}
+.hw .faq-a p + p,
+.hw .walk-body p + p {
+  margin-top: 8px;
+}
+.hw .walk-steps li h3,
+.hw .walk-steps li.on h3 {
+  color: var(--ink);
+}
+.hw .walk-body,
+.hw .walk-steps li.on .walk-body {
+  color: var(--ink);
+}
+.hw .gloss dd {
+  color: var(--ink);
+}
+.hw .hw-tools .badge {
+  font-size: 13px;
+  height: 30px;
+}
+.hw .walk-steps li {
+  border-color: var(--line-strong);
+}
+.hw .walk-steps li:not(.on) .walk-n {
+  background: var(--card-2);
+  color: var(--ink);
+}

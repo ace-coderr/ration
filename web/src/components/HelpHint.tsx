@@ -14,11 +14,11 @@ export const HELP: Record<HelpKey, { text: string; anchor: string }> = {
     anchor: "idea",
   },
   vaults: {
-    text: "A vault is the account that holds the money on one chain. Only the owner can add money, take it out, or pause spending there. Spenders can never touch the money except to spend inside their limit.",
+    text: "A vault is the account that holds the money on one chain. Only the owner can add money, take it out, or pause spending there. A spender can only make payments, up to its slice and its own cap.",
     anchor: "who",
   },
   spenders: {
-    text: "A spender is a person or an AI agent allowed to spend. They can only spend inside the slice on each chain, and inside their own cap if you set one. Revoking someone takes effect within seconds.",
+    text: "A spender is a person or an AI agent allowed to spend. They can only make payments, up to the slice on each chain and their own cap. They can't change any setting. Revoking someone takes effect within seconds.",
     anchor: "who",
   },
   ledger: {

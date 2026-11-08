@@ -83,7 +83,7 @@ function AddForm({ ownerOk }: { ownerOk: boolean }) {
       <div className="field">
         <label htmlFor="sp-addr">Address</label>
         <div className={`input-block ${address && !okAddr ? "error" : ""}`}><input id="sp-addr" style={{ fontSize: 15 }} placeholder="0x…" value={address} onChange={(e) => setAddress(e.target.value.trim())} spellCheck={false} disabled={!ownerOk} /></div>
-        <p className={`helper ${address && !okAddr ? "err" : ""}`}>{address && !okAddr ? "That doesn't look like a full address." : "The wallet or agent key that will call spend. It can only spend, never withdraw."}</p>
+        <p className={`helper ${address && !okAddr ? "err" : ""}`}>{address && !okAddr ? "That doesn't look like a full address." : "The wallet or agent key that will make payments. It can only pay up to the slice and its own cap, and can't change any setting."}</p>
       </div>
       <div className="grid two">
         <div className="field">
@@ -189,7 +189,7 @@ export function Spenders() {
             : <AddForm ownerOk={ownerOk} />}
         </Rise>
       </Stagger>
-      <Footnote>Spenders can only spend out of the slice on each chain, to the recipients you allow. They can't withdraw or change settings. Names are kept in this browser only.</Footnote>
+      <Footnote>A spender can only make payments, up to its slice and its own cap. It can't change any setting or touch the vault's other money. By default a payment can go to any address, so the owner can switch on an allowed-recipients list on the Vaults page. Names are kept in this browser only.</Footnote>
     </>
   );
 }

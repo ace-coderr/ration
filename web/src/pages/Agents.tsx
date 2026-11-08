@@ -168,7 +168,7 @@ export function Agents() {
             <h2 className="h2"><PlugZap size={20} style={{ verticalAlign: -3 }} /> Set it up in four steps</h2>
             <ol style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 22, gridTemplateColumns: "minmax(0, 1fr)" }}>
               <li className="stack" style={{ gap: 10 }}><b>1. Install and build</b><Code text={"pnpm install\npnpm --filter @ration/mcp build"} /></li>
-              <li className="stack" style={{ gap: 10 }}><b>2. Give the agent its own key</b><p className="helper">Use a separate testnet key. Add its address on the Spenders page so it is allowed to spend, with a cap if you like. It can never withdraw.</p></li>
+              <li className="stack" style={{ gap: 10 }}><b>2. Give the agent its own key</b><p className="helper">Use a separate testnet key. Add its address on the Spenders page so it is allowed to spend, with a cap if you like. It can only make payments, up to its slice and its own cap. It can't change any setting or touch the vault's other money. By default a payment can go to any address, so the owner can switch on an allowed-recipients list on the Vaults page.</p></li>
               <li className="stack" style={{ gap: 10 }}><b>3. Add Ration to your MCP client</b><Code text={CONFIG_JSON} /></li>
               <li className="stack" style={{ gap: 10 }}><b>4. Ask something</b><Code text={'"How much of the Ration budget is left on each chain?"\n"Spend 20 mUSDC on Base to 0x…"'} /></li>
             </ol>

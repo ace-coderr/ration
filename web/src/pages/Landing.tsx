@@ -9,7 +9,7 @@ import { num } from "@/lib/format";
 import { useSnapshot } from "@/state/data";
 
 const FAQ = [
-  ["Does Ration hold my money?", "No. Each chain has its own vault, and only the owner can withdraw from it. Ration moves the right to spend, never the funds themselves."],
+  ["Does Ration hold my money?", "No. Each chain has its own vault, and only the owner can add or remove its money. Spenders can only make payments, up to their slice and their own cap. Ration moves the right to spend, never the funds themselves."],
   ["What stops it from overspending?", "A slice is removed from one chain before it is added to the next. The sum of all slices plus what has been spent can't go above the budget, even while a message is in flight. If a message is lost, the budget goes unused. It never goes over."],
   ["Who runs the bot that moves the slices?", "Nobody. A reactive contract on Reactive Network watches every vault and sends the callbacks. There is no server and no keeper to keep alive."],
   ["Can funds move between chains?", "No. You fund each vault yourself. If one chain needs more real money, you top it up. Ration only decides how much of the limit each chain may spend."],

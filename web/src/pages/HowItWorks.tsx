@@ -185,7 +185,7 @@ const WORDS: [string, string][] = [
   ["Spender", "A person or an AI agent that is allowed to spend."],
   ["Cap", "An extra limit on one spender, per chain, per period. Leave it empty to limit them only by the slice."],
   ["Vault", "A program on a chain that holds the money and the slice, and checks every spend against the rules."],
-  ["Hub", "The Reactive contract that watches the vaults and moves slices between chains. It never holds money."],
+  ["Hub", "The Reactive contract that watches the vaults and moves slices between chains. It never holds the budget's tokens, only its own fuel."],
   ["Fuel", "The small network fees (called gas) that keep the automation running."],
   ["Ledger", "The list of everything that happened, with a link to each transaction."],
   ["Proof", "A check, done in your browser from the chains' own records, that the budget was never exceeded."],
@@ -288,7 +288,7 @@ export function HowItWorks() {
   ];
 
   return (
-    <>
+    <div className="hw">
       <PageHead
         eyebrow="How it works"
         title="One budget. Spend anywhere. Never over."
@@ -397,9 +397,9 @@ export function HowItWorks() {
         <div className="grid three hw-roles">
           {[
             { icon: KeyRound, name: "Owner", to: "/budget", cta: "Set budget", body: "Sets the budget and the period, approves spenders, and can revoke them. Only the owner can add money to a vault or take it out. One wallet (a single private key) controls this, so it has to be kept safe." },
-            { icon: UserRound, name: "Spender", to: "/spenders", cta: "Spenders", body: "A person or an AI agent. It can only make payments, and only up to the slice on each chain and its own cap. It cannot withdraw money or change any setting. By default it can pay anyone; the owner can limit who may be paid." },
+            { icon: UserRound, name: "Spender", to: "/spenders", cta: "Spenders", body: "A person or an AI agent. A spender can only make payments, up to its slice and its own cap. It can't change any setting or touch the vault's other money. By default a payment can go to any address, so the owner can switch on an allowed-recipients list on the Vaults page." },
             { icon: Landmark, name: "Vault", to: "/vaults", cta: "Vaults", body: "A program on each chain that holds the money and the slice. It checks every spend against the rules and says why when it refuses." },
-            { icon: Cpu, name: "Hub", href: addrUrl("lasna", HUB), cta: "See the hub", body: "The Reactive contract that moves slices between chains. It never holds money, and it only moves allowance that a chain has already given up." },
+            { icon: Cpu, name: "Hub", href: addrUrl("lasna", HUB), cta: "See the hub", body: "The Reactive contract that moves slices between chains. It never holds the budget's tokens (only its own fuel), and it only moves allowance that a chain has already given up." },
             { icon: FuelIcon, name: "Fuel", to: "/fuel", cta: "Fuel", body: "The network fees that keep the automation running: lREACT (the Reactive Network's test coin) for the hub, and a little test ETH for each chain's vault. If one runs dry, it pauses until someone tops it up." },
           ].map((r) => (
             <motion.div key={r.name} className="card hw-role" whileHover={{ y: -3 }} transition={{ duration: 0.15 }}>
@@ -439,7 +439,7 @@ export function HowItWorks() {
           </ul>
           <div className="codeblock">{`pnpm install\npnpm --filter @ration/mcp build\n# then point your MCP client at the built server, with the agent's own key in AGENT_PRIVATE_KEY:\nnode /absolute/path/to/ration/packages/mcp/dist/mcp/src/index.js`}<CopyBtn text={"pnpm install\npnpm --filter @ration/mcp build"} label="Copy the install commands" /></div>
           <div className="row between wrap">
-            <span className="helper">The agent needs its own testnet key, and its address must be added as a spender. It can pay only inside its slice and cap, and it can never withdraw or change settings.</span>
+            <span className="helper">The agent needs its own testnet key, and its address must be added as a spender. An agent can only make payments, up to its slice and its own cap. It can't change any setting or touch the vault's other money. By default a payment can go to any address, so the owner can switch on an allowed-recipients list on the Vaults page.</span>
             <Link to="/agents" className="btn auto small">Set up an agent <ArrowRight size={16} /></Link>
           </div>
         </div>
@@ -448,7 +448,7 @@ export function HowItWorks() {
       {/* 8 ------------------------------------------------------------ safety */}
       <Section id="safe" eyebrow="Is it safe?" title="Honest answers.">
         <ul className="hw-safe">
-          <li><b>A spender cannot withdraw or change settings.</b> Only the owner can add or remove money, set the budget, pause a vault, or change who may spend. A spender can only make payments, up to its slice and cap. By default a payment can go to any address, so the owner can switch on a list of allowed recipients on the Vaults page.</li>
+          <li><b>A spender can only make payments, up to its slice and its own cap.</b> It can't change any setting or touch the vault's other money. By default a payment can go to any address, so the owner can switch on an allowed-recipients list on the Vaults page. Only the owner can add or remove money, set the budget, pause a vault, or change who may spend.</li>
           <li><b>If a message between chains is lost, budget goes unused. It is never overspent.</b> Allowance is removed from one chain before it is added to another. A lost message can leave some allowance idle until the period ends, but it can't create any.</li>
           <li><b>Revoking works within seconds.</b> It takes effect from the next block, which is how a chain groups transactions, a few seconds at most. After that, any spend from that address is refused.</li>
           <li><b>This is a testnet.</b> The token is a play-money mock, and the code has had a careful self-review but <b>no independent audit yet</b>. Do not use it with real money.</li>
@@ -496,7 +496,7 @@ export function HowItWorks() {
           <Link to="/proof" className="btn auto">See the proof</Link>
         </div>
       </Rise>
-    </>
+    </div>
   );
 }
 
