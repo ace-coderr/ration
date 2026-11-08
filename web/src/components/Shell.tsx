@@ -41,7 +41,7 @@ function BudgetStrip() {
       <div>
         <div className="strip-label">Remaining</div>
         <div className="strip-amount">
-          {live ? <><Ticker value={num(remaining)} format={(n) => Math.round(n).toLocaleString("en-US")} /> <span className="muted">/ {fmtAmt(budget, 0)}</span></> : <span className="muted">–</span>}
+          {live ? <><Ticker value={num(remaining)} format={(n) => Math.round(n).toLocaleString("en-US")} /> <span className="muted strip-of">/ {fmtAmt(budget, 0)}</span></> : <span className="muted">–</span>}
         </div>
       </div>
       <div className="strip-bar" aria-hidden>

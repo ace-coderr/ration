@@ -1991,3 +1991,60 @@ details.faq[open] .faq-plus {
   background: var(--card-2);
   color: var(--ink);
 }
+
+/* ------------------------------------------------------------------ banners on phones */
+@media (max-width: 760px) {
+  .banner {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 16px;
+  }
+  .banner > svg {
+    margin-top: 2px;
+  }
+  .banner > span:not(.top-spacer) {
+    flex: 1 1 calc(100% - 34px);
+    min-width: 0;
+    line-height: 1.45;
+  }
+  .banner > .top-spacer {
+    display: none;
+  }
+  .banner .btn.small {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 44px;
+    padding: 0 10px;
+  }
+}
+
+/* ------------------------------------------------------------------ top bar on narrow phones */
+.topbar .btn {
+  white-space: nowrap;
+}
+@media (max-width: 480px) {
+  .topbar {
+    gap: 8px;
+  }
+  .topbar .top-spacer {
+    flex: 0 0 0;
+  }
+  .strip {
+    gap: 8px;
+    padding: 5px 10px;
+    min-width: 0;
+  }
+  .strip-of {
+    display: none;
+  }
+  .topbar .iconbtn {
+    width: 36px;
+    height: 36px;
+  }
+  .topbar .btn.small {
+    padding: 0 12px;
+    gap: 6px;
+    font-size: 13px;
+  }
+}
