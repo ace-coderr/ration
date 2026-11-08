@@ -2,8 +2,8 @@
   "network": "testnet",
   "hub": {
     "chainId": 5318007,
-    "address": "0x364d0C8281b382A18Eddd125098338153194c29b",
-    "deployBlock": 7836923
+    "address": "0x35609D8793c0528DC716A6c7357681D611d40547",
+    "deployBlock": 7844395
   },
   "systemContract": "0x8888888888888888888888888888888888888888",
   "lanes": [
@@ -12,30 +12,38 @@
       "name": "Base Sepolia",
       "short": "Base",
       "chainId": 84532,
-      "vault": "0xAca373fd8101C81bbe85C84A87336e51b414261D",
-      "token": "0x21c3F809d9627EEDb199731CD78fDf3deEf94De4",
+      "vault": "0x68BeecB8EBdAFBC606D1c0A6cF1C62076E89F9Ca",
+      "token": "0x264D37B2194E0f8B9165F9053Db2E1d4eb02EF20",
       "callbackProxy": "0x476F44b11F5C942c58f4c8E3d0300E5710743585",
-      "deployBlock": 56084908,
+      "deployBlock": 56124212,
       "explorer": "https://sepolia.basescan.org",
-      "rpc": ["https://base-sepolia-rpc.publicnode.com", "https://sepolia.base.org"]
+      "rpc": [
+        "https://base-sepolia-rpc.publicnode.com",
+        "https://sepolia.base.org"
+      ]
     },
     {
       "key": "unichain",
       "name": "Unichain Sepolia",
       "short": "Unichain",
       "chainId": 1301,
-      "vault": "0x21c3F809d9627EEDb199731CD78fDf3deEf94De4",
-      "token": "0x364d0C8281b382A18Eddd125098338153194c29b",
+      "vault": "0xbDC0361fce696028C3a96336b65289C636C38c4a",
+      "token": "0xEA2C1C50250929859f64743810fa741641815810",
       "callbackProxy": "0x775c9B990ADe401060B78D0e98684eEf8d2466C1",
-      "deployBlock": 67286522,
+      "deployBlock": 67294301,
       "explorer": "https://sepolia.uniscan.xyz",
-      "rpc": ["https://sepolia.unichain.org", "https://unichain-sepolia-rpc.publicnode.com"]
+      "rpc": [
+        "https://sepolia.unichain.org",
+        "https://unichain-sepolia-rpc.publicnode.com"
+      ]
     }
   ],
   "lasna": {
     "name": "Reactive Lasna",
     "chainId": 5318007,
-    "rpc": ["https://lasna-rpc.rnk.dev/"],
+    "rpc": [
+      "https://lasna-rpc.rnk.dev/"
+    ],
     "explorer": "https://lasna.reactscan.net"
   },
   "tokenSymbol": "mUSDC",

@@ -21,8 +21,9 @@ contract DeployDestination is Script {
         MockUSDC token = new MockUSDC();
         RationVault vault = new RationVault(IPayable(payable(proxy)), hub, 6);
         vault.setToken(address(token), true);
-        vault.setSpender(agent, true, 0);
         address me = vm.addr(pk);
+        vault.setSpender(agent, true, 0);
+        vault.setSpender(me, true, 0); // the owner can also spend, so one wallet can run a demo
         token.faucet(me, seed);
         token.approve(address(vault), seed);
         vault.deposit(address(token), seed);

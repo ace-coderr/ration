@@ -18,6 +18,7 @@ contract RationHub is AbstractReactive {
     // ---------------------------------------------------------------- constants
     uint256 public constant MAX_LANES = 8;
     uint256 public constant MAX_GRANT_RETRIES = 5;
+    uint256 public constant MAX_RESET_RETRIES = 5;
     uint256 public constant BPS = 10_000;
 
     address internal constant LEGACY_SYSTEM = 0x0000000000000000000000000000000000fffFfF;
@@ -76,6 +77,9 @@ contract RationHub is AbstractReactive {
         uint256 lastSeq;
         bytes32 inbound; // transfer currently refilling this lane, 0 if none
         bool closed; // this vault confirmed the current period is closed (forced start only)
+        bool resetConfirmed; // this vault confirmed it joined the current period
+        uint8 resetTries; // how many times the reset was re-sent
+        uint256 share; // slice this lane was assigned at the start of the current period
     }
 
     struct Transfer {
@@ -103,7 +107,9 @@ contract RationHub is AbstractReactive {
     uint16 public refillBps = 2000;
     uint256 public timeout = 300;
     uint256 public minTransfer = 1;
-    uint64 public callbackGas = 300_000;
+    /// @dev Gas requested for every callback. The callback proxy keeps about 136,000 of it for its own
+    ///      accounting, and the first reset on a fresh vault needs about 164,000, so this must be generous.
+    uint64 public callbackGas = 600_000;
     /// @dev New slices become spendable this many seconds after the hub decides, so small clock
     ///      differences between chains can never let an old and a new slice overlap.
     uint256 public startDelay = 10;
@@ -117,6 +123,7 @@ contract RationHub is AbstractReactive {
     uint256 public epochStart;
     uint256 public epochEnd;
     uint256 public epochBudget;
+    uint256 public epochDecidedAt; // when the hub issued the current period
 
     Lane[] internal _lanes;
     mapping(uint256 => uint256) internal _laneIndexPlusOne; // chainId => index + 1
@@ -131,6 +138,7 @@ contract RationHub is AbstractReactive {
     );
     event EpochStarted(uint256 indexed epochId, uint256 budget, uint256 epochStart, uint256 epochEnd);
     event EpochClosing(uint256 indexed epochId);
+    event ResetReissued(uint256 indexed epochId, uint256 indexed chainId, uint8 attempt);
     event LaneClosed(uint256 indexed epochId, uint256 indexed chainId);
     event TransferRequested(
         bytes32 indexed transferId, uint256 fromChain, uint256 toChain, uint256 amount, uint256 epochId
@@ -185,7 +193,10 @@ contract RationHub is AbstractReactive {
                 pendingOut: 0,
                 lastSeq: 0,
                 inbound: bytes32(0),
-                closed: false
+                closed: false,
+                resetConfirmed: false,
+                resetTries: 0,
+                share: 0
             })
         );
         _laneIndexPlusOne[chainId] = _lanes.length;
@@ -209,6 +220,8 @@ contract RationHub is AbstractReactive {
         l.lastSeq = 0;
         l.inbound = bytes32(0);
         l.closed = false;
+        l.resetConfirmed = false;
+        l.resetTries = 0;
         _subscribeVault(chainId, newVault);
         emit LaneRegistered(chainId, newVault, l.weightBps, l.lowBps);
     }
@@ -284,6 +297,13 @@ contract RationHub is AbstractReactive {
             _callback(l.chainId, l.vault, abi.encodeCall(IRationVault.closeEpoch, (address(0), epochId)));
         }
         emit EpochClosing(epochId);
+    }
+
+    /// @notice Re-send the current period's reset to every vault that has not confirmed it. Safe to repeat:
+    ///         a vault ignores a period it already joined. Use it if a reset callback was lost.
+    function reissueEpoch() external onlyOwner {
+        if (epochId == 0 || closing) revert NothingToStart();
+        _reissueMissing(false);
     }
 
     /// @notice Anyone may roll the epoch once it has ended (the cron tick does this too).
@@ -383,6 +403,7 @@ contract RationHub is AbstractReactive {
 
     function _onReset(uint8 i, uint256 resetEpoch, bytes calldata data) internal {
         if (resetEpoch != epochId) return;
+        _lanes[i].resetConfirmed = true;
         (uint256 slice_,,,, uint256 seq,) =
             abi.decode(data, (uint256, uint256, uint256, uint256, uint256, uint256));
         _mirror(_lanes[i], slice_, seq);
@@ -415,6 +436,7 @@ contract RationHub is AbstractReactive {
             if (_allClosed() && _weightsOk()) _beginEpoch();
             return;
         }
+        if (epochId != 0 && block.timestamp - epochDecidedAt >= timeout) _reissueMissing(true);
         uint256 n = _lanes.length;
         for (uint256 k = 0; k < n; k++) {
             Lane storage l = _lanes[k];
@@ -504,6 +526,30 @@ contract RationHub is AbstractReactive {
         emit TransferGranting(id, t.actual, t.retries);
     }
 
+    function _sendReset(Lane storage l) internal {
+        _callback(
+            l.chainId,
+            l.vault,
+            abi.encodeCall(
+                IRationVault.resetEpoch, (address(0), l.share, epochId, epochStart, epochEnd, epochBudget)
+            )
+        );
+    }
+
+    /// @dev Re-sends the reset to lanes that never confirmed it. `capped` limits the cron's retries.
+    function _reissueMissing(bool capped) internal {
+        uint256 n = _lanes.length;
+        for (uint256 k = 0; k < n; k++) {
+            Lane storage l = _lanes[k];
+            if (!l.active || l.resetConfirmed) continue;
+            if (capped && l.resetTries >= MAX_RESET_RETRIES) continue;
+            l.resetTries++;
+            _sendReset(l);
+            emit ResetReissued(epochId, l.chainId, l.resetTries);
+        }
+        if (capped) epochDecidedAt = block.timestamp; // wait a full timeout before the next round
+    }
+
     function _allClosed() internal view returns (bool) {
         uint256 n = _lanes.length;
         for (uint256 k = 0; k < n; k++) {
@@ -538,6 +584,7 @@ contract RationHub is AbstractReactive {
         epochStart = block.timestamp + startDelay;
         epochEnd = epochStart + epochLength;
         epochBudget = budget;
+        epochDecidedAt = block.timestamp;
 
         uint256 remaining = budget;
         uint256 lastActive = type(uint256).max;
@@ -550,18 +597,16 @@ contract RationHub is AbstractReactive {
             l.pendingOut = 0;
             l.inbound = bytes32(0);
             l.closed = false;
+            l.resetConfirmed = false;
+            l.resetTries = 0;
+            l.share = 0;
             if (!l.active) continue;
             // Rounding dust goes to the last lane so shares add up to the budget exactly.
             uint256 share = k == lastActive ? remaining : (budget * l.weightBps) / BPS;
             remaining -= share;
             l.slice = share;
-            _callback(
-                l.chainId,
-                l.vault,
-                abi.encodeCall(
-                    IRationVault.resetEpoch, (address(0), share, epochId, epochStart, epochEnd, budget)
-                )
-            );
+            l.share = share;
+            _sendReset(l);
         }
         emit EpochStarted(epochId, budget, epochStart, epochEnd);
     }

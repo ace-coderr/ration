@@ -5,6 +5,7 @@ import {Base} from "./Base.t.sol";
 import {RationHub} from "../src/RationHub.sol";
 import {RationVault} from "../src/RationVault.sol";
 import {AbstractCallback} from "@reactive/src/base/AbstractCallback.sol";
+import {IPayable} from "@reactive/src/interfaces/IPayable.sol";
 
 /// @dev The promise under test: an old slice and a new slice are never spendable at the same time,
 ///      whether a period ends on its own or the owner starts a new one early.
@@ -256,5 +257,111 @@ contract EpochChangeTest is Base {
         _deliver(pending - 1);
         _noOverlap();
         assertFalse(_live(vaultA), "old lease has ended and the new one has not started");
+    }
+
+    // ---------------------------------------------------------------- lost resets heal themselves
+
+    function _rollWithOneLostReset() internal returns (uint256 n) {
+        vm.warp(hub.epochEnd());
+        hub.rollEpoch();
+        n = sys.count();
+        _deliver(n - 2); // vault A joins period 2
+        // vault B's reset is lost
+        assertTrue(hub.laneAt(0).resetConfirmed);
+        assertFalse(hub.laneAt(1).resetConfirmed);
+    }
+
+    function test_lostReset_cronResendsAfterTheTimeout() public {
+        uint256 n = _rollWithOneLostReset();
+        _cron(); // too early
+        assertEq(sys.count(), n, "not before the timeout");
+
+        vm.warp(block.timestamp + hub.timeout());
+        _cron();
+        assertEq(sys.count(), n + 1, "only the vault that never confirmed is asked again");
+        _deliver(n);
+        assertEq(vaultB.epochId(), 2);
+        assertTrue(hub.laneAt(1).resetConfirmed);
+
+        vm.warp(block.timestamp + hub.timeout());
+        _cron();
+        assertEq(sys.count(), n + 1, "nothing left to resend");
+        _afterStart();
+        assertEq(vaultA.slice() + vaultB.slice(), BUDGET);
+        _noOverlap();
+    }
+
+    function test_reissueEpoch_ownerResendsImmediatelyAndIsIdempotent() public {
+        uint256 n = _rollWithOneLostReset();
+        vm.prank(bob);
+        vm.expectRevert(RationHub.NotOwner.selector);
+        hub.reissueEpoch();
+
+        hub.reissueEpoch();
+        assertEq(sys.count(), n + 1);
+        _deliver(n);
+        _deliver(n); // duplicate delivery of the same reset
+        assertEq(vaultB.epochId(), 2);
+        assertEq(vaultB.slice(), 500e6);
+
+        hub.reissueEpoch(); // everyone confirmed: no-op
+        assertEq(sys.count(), n + 1);
+    }
+
+    function test_reissueEpoch_notWhileClosing() public {
+        hub.startEpoch();
+        vm.expectRevert(RationHub.NothingToStart.selector);
+        hub.reissueEpoch();
+    }
+
+    function test_lostReset_cronRetriesAreCapped() public {
+        uint256 n = _rollWithOneLostReset();
+        for (uint256 i = 0; i < 8; i++) {
+            vm.warp(block.timestamp + hub.timeout());
+            _cron();
+        }
+        assertEq(sys.count(), n + hub.MAX_RESET_RETRIES());
+        assertEq(hub.laneAt(1).resetTries, hub.MAX_RESET_RETRIES());
+    }
+
+    function test_lostReset_reissuedResetCannotOverlapOrInflate() public {
+        uint256 n = _rollWithOneLostReset();
+        _afterStart();
+        _spend(vaultA, 100e6);
+        vm.warp(block.timestamp + hub.timeout());
+        _cron();
+        _deliver(n);
+        assertEq(vaultB.slice(), 500e6, "B gets exactly its assigned share");
+        assertEq(vaultA.slice() + vaultB.slice() + vaultA.spentInEpoch(), BUDGET);
+        _noOverlap();
+    }
+
+    // ---------------------------------------------------------------- gas budget guard
+
+    function test_firstResetFitsInsideTheHubsCallbackGas() public {
+        RationVault fresh = new RationVault(IPayable(payable(PROXY_A)), address(hub), 6);
+        uint256 before = gasleft();
+        vm.prank(PROXY_A);
+        fresh.resetEpoch(address(hub), 500e6, 1, block.timestamp + 10, block.timestamp + 7 days, BUDGET);
+        uint256 used = before - gasleft();
+        // The callback proxy keeps about 136,000 gas for itself. Leave 50% headroom on what is left.
+        assertLt(
+            (used * 3) / 2 + 136_000, hub.callbackGas(), "callback gas limit is too tight for a first reset"
+        );
+    }
+
+    function test_everyCallbackFitsInsideTheHubsCallbackGas() public {
+        uint256 limit = hub.callbackGas() - 136_000;
+        vm.startPrank(PROXY_A);
+        uint256 g = gasleft();
+        vaultA.release(address(hub), 10e6, bytes32(uint256(11)), 1);
+        assertLt(((g - gasleft()) * 3) / 2, limit);
+        g = gasleft();
+        vaultA.grant(address(hub), 10e6, bytes32(uint256(12)), 1);
+        assertLt(((g - gasleft()) * 3) / 2, limit);
+        g = gasleft();
+        vaultA.closeEpoch(address(hub), 1);
+        assertLt(((g - gasleft()) * 3) / 2, limit);
+        vm.stopPrank();
     }
 }
