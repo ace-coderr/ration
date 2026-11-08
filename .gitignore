@@ -1,0 +1,19 @@
+# Foundry
+cache/
+out/
+broadcast/
+
+# Node
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+
+# Secrets: never commit keys
+.env
+.env.*
+!.env.example
+
+# Local
+.logs/
+.DS_Store
