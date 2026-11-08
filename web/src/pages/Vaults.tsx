@@ -166,7 +166,7 @@ function ResendNotice() {
               qc.invalidateQueries({ queryKey: ["snapshot"] });
             }}
           >
-            {busy ? "Waiting for your wallet…" : "Re-send the new period now"}
+            {busy ? "Waiting for your walletâ€¦" : "Re-send the new period now"}
           </button>
         ) : undefined
       }

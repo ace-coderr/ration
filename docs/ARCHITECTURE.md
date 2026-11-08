@@ -152,6 +152,9 @@ These were open questions above. They are now settled by real transactions
   block instead.)
 - **Explorer links**: `https://lasna.reactscan.net/tx/<hash>` and `/address/<addr>` resolve;
   Base `https://sepolia.basescan.org`, Unichain `https://sepolia.uniscan.xyz`.
+- **Callback gas is tight.** The callback proxy keeps `_extraGas + _maxChargeGas` (about 130,000) plus a log reserve out of the
+  gas a reactive contract requests. The first `resetEpoch` on a fresh vault needs about 164,000. Requesting 300,000 failed on the
+  live chains; the hub requests 600,000. See finding 9 in `docs/AUDIT.md`.
 - **Public RPC flakiness**: DNS lookups from Foundry and viem occasionally fail on the public
   endpoints. Scripts retry; nothing depends on a single call succeeding.
 

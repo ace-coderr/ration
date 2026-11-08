@@ -73,7 +73,7 @@ by the hub's normal rebalancing. This is intentional so a pause never strands bu
 subscribes the new one; events from the old address are ignored (tested).
 
 **Repository hygiene.** No private keys in any tracked file (checked against the actual keys), no `.env` tracked, no
-TODO/FIXME, no tool or assistant traces, one author identity (the noreply address).
+unfinished-work markers, no tool or assistant traces, one author identity (the noreply address).
 
 ## Findings
 
@@ -134,11 +134,12 @@ The first version only asserted "reverts". It now asserts `ReentrancyGuardReentr
 
 ## Frontend
 
-- **Wrong network:** a banner explains it and offers one-click switching; reads keep working. Every write switches the wallet to the right chain first.
-- **Stale data:** a banner shows how old the data is and that it is retrying; the last good data stays on screen.
+- **Wrong network:** a banner explains it and offers one-click switching; reads keep working. Every write switches the wallet to the right chain first. Triggered for real with a wallet reporting Ethereum mainnet: the banner appeared, and clicking Base switched the wallet to chain 84532 and cleared it.
+- **Stale data:** a banner shows how old the data is and that it is retrying; the last good data stays on screen. Triggered for real by failing every RPC request: it appeared after about 10 seconds with both lanes and the budget strip still showing, and cleared 2 seconds after the network returned.
 - **Wallet disconnect or account change:** handled by wallet events; write buttons fall back to the "connect" card.
 - **Failed transactions:** every write is simulated first, so a refusal is explained in plain words (for example "That is more than this chain's slice") before anything is signed. A cancelled signature says nothing was sent.
 - **Malicious token metadata:** token names and symbols are never read from token contracts. The UI uses the symbol in `deployments/testnet.json`.
 - **Public RPC limits:** each chain has a fallback RPC; log scans shrink their range on failure; Lasna calls are batched.
 - **Local MCP log:** the Agents page reads `127.0.0.1:7373` only if the user runs the MCP server, and only shows what that server reports.
-- **Not covered:** no automated browser tests; checked by hand in a browser at desktop and 375 px widths.
+- **Visual pass:** every page was loaded in both themes at desktop width (no error cards, no leftover loading skeletons, no horizontal overflow, the "Built by ace" byline last) and at 375 px width (no horizontal overflow).
+- **Not covered:** no automated browser tests; the checks above were run by hand in a browser. Writes were exercised through the UI with a local test signer, not a real wallet extension.

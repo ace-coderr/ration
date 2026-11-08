@@ -11,6 +11,7 @@ Testnet build: Base Sepolia, Unichain Sepolia, Reactive Lasna. The token is a mo
 
 - Live app: set after you deploy it (see "Deploy the web app")
 - Proof, with every transaction hash and latency: [docs/EVIDENCE.md](docs/EVIDENCE.md)
+- Proof that a forced early start never overlaps old and new slices: [docs/EVIDENCE_FORCED_START.md](docs/EVIDENCE_FORCED_START.md)
 - Audit notes: [docs/AUDIT.md](docs/AUDIT.md)
 - Demo script: [docs/DEMO_PATH.md](docs/DEMO_PATH.md)
 - Reactive notes (what was confirmed, what surprised us): [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
@@ -54,7 +55,7 @@ flowchart LR
 | `RationHub` | Reactive Lasna | Reactive contract. Subscribes to every vault's events and a periodic tick. Requests the callbacks. Never touches tokens. |
 | `MockUSDC` | testnets only | Worthless test stablecoin with a public faucet. |
 
-Measured on the live testnets: spend to grant landed in **3 to 4 seconds**. See [docs/EVIDENCE.md](docs/EVIDENCE.md).
+Measured on the live testnets: spend to grant landed in **3 to 4 seconds**; an early period start (stop spending everywhere, then issue new slices) completed in **about 6 seconds**. See [docs/EVIDENCE.md](docs/EVIDENCE.md).
 
 ## Honest limits
 

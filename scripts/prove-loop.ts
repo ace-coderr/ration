@@ -241,7 +241,7 @@ async function main() {
         retry(() => c.getBlock()),
       ]);
       if (blk.timestamp >= start) break;
-      console.log(`waiting for ${l.name} slice to open…`);
+      console.log(`waiting for ${l.name} slice to openâ€¦`);
       await sleep(3000);
     }
   }
