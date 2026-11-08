@@ -7,13 +7,15 @@
   "scripts": {
     "prove-loop": "tsx scripts/prove-loop.ts",
     "mcp-smoke": "tsx scripts/mcp-smoke.ts",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "deploy:web": "pnpm --filter ration-web build && wrangler deploy"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.32.2",
     "@types/node": "^26.6.6",
     "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "wrangler": "4.50.0"
   },
   "dependencies": {
     "dotenv": "^18.0.9",

@@ -17,3 +17,6 @@ dist/
 # Local
 .logs/
 .DS_Store
+
+# Cloudflare
+.wrangler/

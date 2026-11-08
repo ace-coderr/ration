@@ -9,7 +9,7 @@ Tokens stay in vaults you control. Only the right to spend moves.
 
 Testnet build: Base Sepolia, Unichain Sepolia, Reactive Lasna. The token is a mock with no value.
 
-- Live app: set after you deploy it (see "Deploy the web app")
+- **Live app: https://ration.plumbline-app.workers.dev** (try `/live` and `/proof`)
 - Proof, with every transaction hash and latency: [docs/EVIDENCE.md](docs/EVIDENCE.md)
 - Proof that a forced early start never overlaps old and new slices: [docs/EVIDENCE_FORCED_START.md](docs/EVIDENCE_FORCED_START.md)
 - Audit notes: [docs/AUDIT.md](docs/AUDIT.md)
@@ -183,6 +183,8 @@ directly instead of returning 404. Everything is done in the dashboard:
 7. Paste `/live` and `/proof` straight into new tabs to confirm deep links work. Put the URL at the top of this README.
 
 Later pushes to `main` redeploy automatically.
+
+From a terminal instead (what the live site was deployed with): `pnpm exec wrangler login`, then `pnpm deploy:web`.
 
 ## Built with
 
