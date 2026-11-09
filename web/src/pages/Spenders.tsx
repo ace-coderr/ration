@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Address } from "viem";
+import { DEMO_ADDRESS } from "@/lib/demoAgent";
 import { Addr, ChainBadge, Footnote, PageHead, Rise, Seg, Skeleton, Stagger, StateCard } from "@/components/kit";
 import { vaultAbi } from "@/lib/abi";
 import { clientFor } from "@/lib/chains";
@@ -154,7 +155,7 @@ export function Spenders() {
                         <div className="row between wrap">
                           <div className="row" style={{ gap: 12 }}>
                             <span className="token-dot" style={{ width: 40, height: 40, background: active ? "var(--lime)" : "var(--card-2)", color: "#0E1411" }}><Icon size={20} /></span>
-                            <div><div className="h2" style={{ fontSize: 20 }}>{lbl?.name ?? (lbl?.kind === "person" ? "Person" : "Spender")}</div><Addr value={s.address} full /></div>
+                            <div><div className="h2" style={{ fontSize: 20 }}>{s.address.toLowerCase() === DEMO_ADDRESS.toLowerCase() ? "Shared demo agent (public key)" : lbl?.name ?? (lbl?.kind === "person" ? "Person" : "Spender")}</div><Addr value={s.address} full /></div>
                           </div>
                           <div className="row" style={{ gap: 8 }}>
                             {!active && <span className="badge"><i />Revoked</span>}
@@ -189,7 +190,7 @@ export function Spenders() {
             : <AddForm ownerOk={ownerOk} />}
         </Rise>
       </Stagger>
-      <Footnote>A spender can only make payments, up to its slice and its own cap. It can't change any setting or touch the vault's other money. By default a payment can go to any address, so the owner can switch on an allowed-recipients list on the Vaults page. Names are kept in this browser only.</Footnote>
+      <Footnote>A spender can only make payments, up to its slice and its own cap. It can't change any setting or touch the vault's other money. By default a payment can go to any address, so the owner can switch on an allowed-recipients list on the Vaults page. Names are kept in this browser only. One spender here, the shared demo agent, uses a deliberately public key so anyone can try a real spend without a wallet. The vaults cap it at a small amount per period, and it can't change any setting.</Footnote>
     </>
   );
 }

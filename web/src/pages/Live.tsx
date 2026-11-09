@@ -5,7 +5,8 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Gauge } from "@/components/Gauge";
 import { LaneBoard } from "@/components/LaneBoard";
-import { Footnote, PageHead, Rise, Skeleton, Stagger, Stamp, StateCard, ChainBadge, Ticker } from "@/components/kit";
+import { Footnote, PageHead, Rise, Seg, Skeleton, Stagger, Stamp, StateCard, ChainBadge, Ticker } from "@/components/kit";
+import { DemoSpend } from "@/components/DemoSpend";
 import { LANES, SYMBOL, laneByKey, txUrl } from "@/lib/config";
 import { clientFor } from "@/lib/chains";
 import { vaultAbi } from "@/lib/abi";
@@ -29,7 +30,7 @@ export function useBudgetMath() {
   }, [data]);
 }
 
-function SpendPanel() {
+function WalletSpend({ onUseDemo }: { onUseDemo: () => void }) {
   const w = useWallet();
   const { data } = useSnapshot();
   const [laneKey, setLaneKey] = useState(LANES[0].key);
@@ -50,14 +51,14 @@ function SpendPanel() {
 
   if (!w.account) {
     return (
-      <StateCard title="Connect to spend" action={<Link className="btn auto" to="/connect"><Lock size={16} /> Connect a wallet</Link>}>
+      <StateCard title="Connect to spend" action={<div className="row wrap" style={{ gap: 10 }}><Link className="btn auto" to="/connect"><Lock size={16} /> Connect a wallet</Link><button className="btn auto" onClick={onUseDemo}>Use the shared demo agent</button></div>}>
         Watching is open to everyone. To spend, connect a wallet that the owner has approved as a spender. Connecting can't move any money.
       </StateCard>
     );
   }
   if (role.data && !role.data[0]) {
     return (
-      <StateCard tone="warn" title="This wallet can't spend yet" action={<Link className="btn auto" to="/spenders">See who can spend</Link>}>
+      <StateCard tone="warn" title="This wallet can't spend yet" action={<div className="row wrap" style={{ gap: 10 }}><button className="btn auto" onClick={onUseDemo}>Use the shared demo agent</button><Link className="btn auto" to="/spenders">See who can spend</Link></div>}>
         Only approved spenders can spend from a vault. The owner adds spenders on the Spenders page.
       </StateCard>
     );
@@ -108,6 +109,35 @@ function SpendPanel() {
       >
         {busy ? "Waiting for your wallet…" : `Spend ${amount || "0"} ${SYMBOL} on ${lane.short}`} {!busy && <ArrowRight size={20} />}
       </button>
+    </div>
+  );
+}
+
+function SpendPanel() {
+  const w = useWallet();
+  const [choice, setChoice] = useState<"wallet" | "demo" | null>(null);
+  const approval = useQuery({
+    enabled: !!w.account,
+    queryKey: ["approval", w.account],
+    refetchInterval: 15_000,
+    queryFn: async () => (await Promise.all(LANES.map((l) => clientFor(l.key).readContract({ address: l.vault, abi: vaultAbi, functionName: "spenders", args: [w.account!] })))).map((x) => x[0]),
+  });
+  const approved = !!approval.data?.some(Boolean);
+  const checking = !!w.account && approval.isLoading;
+  // Default: the visitor's own wallet if it is approved to spend, otherwise the shared demo agent.
+  const mode = choice ?? (w.account && approved ? "wallet" : "demo");
+  const why = !w.account
+    ? "No wallet is connected, so spends go through the shared demo agent."
+    : checking ? "Checking whether your wallet is an approved spender…"
+    : !approved ? "This wallet isn't an approved spender, so spends go through the shared demo agent."
+    : mode === "wallet" ? "Your wallet is an approved spender, so spends are signed by you." : "You chose the shared demo agent.";
+  return (
+    <div className="stack" style={{ gap: 12 }}>
+      <div className="row between wrap" style={{ gap: 10 }}>
+        <Seg label="Who spends" value={mode} onChange={(v) => setChoice(v)} options={[{ v: "wallet", label: "Use my wallet" }, { v: "demo", label: "Use the shared demo agent" }]} />
+      </div>
+      <p className="helper" role="status">{why}</p>
+      {checking && choice === null ? <Skeleton h={220} r={26} /> : mode === "demo" ? <DemoSpend /> : <WalletSpend onUseDemo={() => setChoice("demo")} />}
     </div>
   );
 }

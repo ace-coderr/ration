@@ -472,6 +472,9 @@ export function HowItWorks() {
               {live(<>New slices open <b>{delay} seconds</b> after the hub decides, as a safety margin between chains. The hub wakes up about every <b>{wake}</b> on this deployment, so the next period can start up to that long after the old one ends. Anyone can also trigger it sooner by calling the hub contract directly. A period here lasts <b>{periodLen}</b>.</>, "")}
             </p>
           </Faq>
+          <Faq q="Can I try it without a wallet?">
+            <p>Yes. On the Live budget page, choose "Use the shared demo agent" and press one button. It sends a real spend on the chain you pick, signed in your browser by a public demo key. That key is only an approved spender: the vaults cap it at 100 mUSDC per period per chain, it can't change any setting, and the token is play money. The cap is shared by every visitor, so it can run out until the next period.</p>
+          </Faq>
           <Faq q="Can I set a cap per spender?">
             <p>Yes. On the Spenders page, each spender can have a cap per chain, per period. It resets when the period does. Leave it empty and that spender is limited only by the slice.</p>
           </Faq>

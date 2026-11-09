@@ -11,6 +11,7 @@ Tokens stay in vaults you control. Only the right to spend moves.
 
 Testnet build: Base Sepolia, Unichain Sepolia, Reactive Lasna. The token is a mock with no value.
 
+- Try it without a wallet: on the Live page choose "Use the shared demo agent". It uses a deliberately public demo key (an approved spender only, capped at 100 mUSDC per period per chain on-chain, play-money token) kept in `web/src/lib/demoAgent.ts`.
 - Proof, with every transaction hash and latency: [docs/EVIDENCE.md](docs/EVIDENCE.md)
 - Proof that a forced early start never overlaps old and new slices: [docs/EVIDENCE_FORCED_START.md](docs/EVIDENCE_FORCED_START.md)
 - Audit notes: [docs/AUDIT.md](docs/AUDIT.md)
