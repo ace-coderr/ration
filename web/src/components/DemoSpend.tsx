@@ -166,7 +166,7 @@ export function DemoSpend() {
             return (
               <span key={l.key} className="helper row" style={{ gap: 6 }}>
                 <FuelIcon size={14} aria-hidden /> Gas on {l.short}:{" "}
-                {d ? <b className={`num ${low ? "err" : ""}`}>{fmtNative(d.eth, 5)} ETH{low ? " (low)" : `, about ${d.spendsOfGas.toLocaleString("en-US")} spends`}</b> : "…"}
+                {d ? <b className="num" style={low ? { color: "var(--red-ink)" } : undefined}>{fmtNative(d.eth, 5)} ETH{low ? " (low)" : `, about ${d.spendsOfGas.toLocaleString("en-US")} spends`}</b> : "…"}
               </span>
             );
           })}

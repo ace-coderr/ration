@@ -2048,3 +2048,31 @@ details.faq[open] .faq-plus {
     font-size: 13px;
   }
 }
+
+/* Phone touch targets: toggle and amount chips at least 44px tall */
+@media (max-width: 760px) {
+  .seg button,
+  .field .chip {
+    min-height: 44px;
+  }
+  .seg {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 760px) {
+  .toasts {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    max-width: none;
+  }
+  .toast {
+    overflow-wrap: anywhere;
+  }
+  .toast a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
